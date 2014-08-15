@@ -28,6 +28,10 @@
 #include "debug.h"
 #include "net.h"
 
+#ifdef WITH_RIOT
+#include "destiny/socket.h"
+#endif
+
 #ifdef WITH_CONTIKI
 # ifndef DEBUG
 #  define DEBUG DEBUG_PRINT
@@ -144,6 +148,15 @@ print_readable( const unsigned char *data, unsigned int len,
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
+#ifdef WITH_RIOT
+coap_print_addr(const coap_address_t *addr, unsigned char *buf, size_t len) {
+    if (!ipv6_addr_to_str((char*)buf, len, (ipv6_addr_t*)&addr->sin6_addr)) {
+        return 0;
+    } else {
+        return IPV6_MAX_ADDR_STR_LEN;
+    }
+}
+#else
 size_t
 coap_print_addr(const struct coap_address_t *addr, unsigned char *buf, size_t len) {
 #ifdef HAVE_ARPA_INET_H
@@ -233,6 +246,7 @@ coap_print_addr(const struct coap_address_t *addr, unsigned char *buf, size_t le
   return 0;
 #endif
 }
+#endif /* WITH_RIOT */
 
 #ifdef WITH_CONTIKI
 # define fprintf(fd, ...) PRINTF(__VA_ARGS__)

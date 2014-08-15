@@ -64,7 +64,7 @@ void coap_log_impl(coap_log_t level, const char *format, ...);
 void coap_show_pdu(const coap_pdu_t *);
 
 struct coap_address_t;
-size_t coap_print_addr(const struct coap_address_t *, unsigned char *, size_t);
+size_t coap_print_addr(const coap_address_t *, unsigned char *, size_t);
 
 #else
 
