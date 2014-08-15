@@ -198,7 +198,8 @@ coap_context_t *coap_new_context(const coap_address_t *listen_addr);
 static inline unsigned short 
 coap_new_message_id(coap_context_t *context) {
 #ifndef WITH_CONTIKI
-  return htons(++(context->message_id));
+  context->message_id++;
+  return htons(context->message_id);
 #else /* WITH_CONTIKI */
   return uip_htons(++context->message_id);
 #endif
@@ -351,6 +352,16 @@ coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node);
  * object.
  */
 int coap_read(coap_context_t *context);
+
+#ifdef WITH_DESTINY_TIMEOUT
+/**
+ * Reads data from the network with timeout and tries to parse as CoAP
+ * PDU. On success, 0 is returned and a new node with the parsed PDU
+ * is added to the receive queue in the specified context object.
+ */
+#include "vtimer.h"
+int coap_try_read(coap_context_t *ctx, timex_t* timeout);
+#endif  /* WITH_DESTINY_TIMEOUT */
 
 /**
  * Parses and interprets a CoAP message with context @p ctx. This function

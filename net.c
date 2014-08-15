@@ -490,7 +490,7 @@ coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
 
   /* Compare the transport address. */
 
-#ifdef WITH_POSIX
+#if defined(WITH_POSIX) && !defined(WITH_RIOT)
   switch (peer->addr.sa.sa_family) {
   case AF_INET:
     coap_hash((const unsigned char *)&peer->addr.sin.sin_port,
@@ -507,7 +507,10 @@ coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
   default:
     return;
   }
-#endif
+#endif  /* WITH_POSIX && !WITH_RIOT */
+#ifdef WITH_RIOT
+  coap_hash((const unsigned char*)&peer, sizeof(coap_address_t), h);
+#endif  /* WITH_RIOT */
 #if defined(WITH_LWIP) || defined(WITH_CONTIKI)
     /* FIXME: with lwip, we can do better */
     coap_hash((const unsigned char *)&peer->port, sizeof(peer->port), h);
@@ -807,6 +810,43 @@ check_opt_size(coap_opt_t *opt, unsigned char *maxpos) {
 
 void coap_dispatch(coap_context_t *context, coap_queue_t *rcvd);
 
+#ifdef WITH_RIOT
+#include "vtimer.h"
+
+int coap_try_read(coap_context_t *ctx, timex_t* timeout) {
+    ssize_t nbytes = -1;
+    coap_packet_t *packet;
+    coap_address_t src;
+    int result = -1;
+
+    coap_address_init(&src);
+
+    /* this is a blocking call when timeout == NULL, 
+       e.g when coap_try_read() was called by coap_read() */
+#ifdef WITH_DESTINY_TIMEOUT
+    nbytes = coap_network_read(ctx->endpoint, &packet, timeout);
+#else
+    nbytes = coap_network_read(ctx->endpoint, &packet);
+#endif  /* WITH_DESTINY_TIMEOUT */
+
+    if (nbytes < 0) {
+        if (!timeout) warn("coap_read: recvfrom");
+    } else {
+        if (coap_address_isany(&ctx->endpoint->addr) ||
+            coap_address_equals(&packet->dst, &ctx->endpoint->addr)) {
+            result = coap_handle_message(ctx, ctx->endpoint, packet);
+        } else {
+            coap_log(LOG_DEBUG, "packet received on wrong interface, dropped\n");
+        }
+    }
+    coap_free_packet(packet);
+    return result;
+}
+
+int coap_read(coap_context_t *ctx) {
+    return coap_try_read(ctx, NULL);
+}
+#else  /* WITH_RIOT */
 int
 coap_read( coap_context_t *ctx ) {
 #if defined(WITH_LWIP) || defined(WITH_CONTIKI)
@@ -877,6 +917,7 @@ coap_read( coap_context_t *ctx ) {
 
   return result;
 }
+#endif  /* WITH_RIOT */
 
 int
 coap_handle_message(coap_context_t *ctx,
@@ -1419,6 +1460,7 @@ handle_request(coap_context_t *context, coap_queue_t *node) {
 			     ? COAP_MESSAGE_ACK
 			     : COAP_MESSAGE_NON,
 			     0, node->pdu->hdr->id, COAP_MAX_PDU_SIZE);
+
     
     /* Implementation detail: coap_add_token() immediately returns 0
        if response == NULL */
