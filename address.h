@@ -77,7 +77,7 @@ typedef struct coap_address_t {
 
 #define _coap_is_mcast_impl(Address) uip_is_addr_mcast(&((Address)->addr))
 #endif /* WITH_CONTIKI */
-#ifdef WITH_POSIX
+#if defined(WITH_POSIX) && !defined(WITH_RIOT)
 
 /** multi-purpose address abstraction */
 typedef struct coap_address_t {
@@ -143,7 +143,32 @@ case  AF_INET6:
   }
  return 0;
 }
-#endif /* WITH_POSIX */
+#endif /* WITH_POSIX && !WITH_RIOT */
+#ifdef WITH_RIOT
+#include "sixlowpan/ip.h"
+#include "destiny/socket.h"
+
+/* RIOT implementation uses ipv6 addresses only */
+typedef sockaddr6_t coap_address_t;
+
+static inline int 
+_coap_address_equals_impl(const coap_address_t *a,
+			  const coap_address_t *b) {
+    /* only check relevant parts: port & ipv6 */
+    return (a->sin6_port == b->sin6_port) &&
+        ipv6_addr_is_equal(&a->sin6_addr, &b->sin6_addr);
+}
+
+static inline int
+_coap_address_isany_impl(const coap_address_t *a) {
+    return ipv6_addr_is_unspecified(&a->sin6_addr);
+}
+
+static inline int
+_coap_is_mcast_impl(const coap_address_t *a) {
+    return ipv6_addr_is_multicast(&a->sin6_addr);
+}
+#endif /* WITH_RIOT */
 
 /** 
  * Resets the given coap_address_t object @p addr to its default
@@ -156,9 +181,12 @@ static inline void
 coap_address_init(coap_address_t *addr) {
   assert(addr);
   memset(addr, 0, sizeof(coap_address_t));
-#ifndef WITH_LWIP
+#ifndef WITH_LWIP || WITH_RIOT
   /* lwip has constandt address sizes and doesn't need the .size part */
   addr->size = sizeof(addr->addr);
+#endif
+#ifdef WITH_RIOT
+  addr->sin6_family = AF_INET6;
 #endif
 }
 
