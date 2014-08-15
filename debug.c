@@ -149,6 +149,7 @@ print_readable( const unsigned char *data, unsigned int len,
 #endif
 
 #ifdef WITH_RIOT
+size_t
 coap_print_addr(const coap_address_t *addr, unsigned char *buf, size_t len) {
     if (!ipv6_addr_to_str((char*)buf, len, (ipv6_addr_t*)&addr->sin6_addr)) {
         return 0;
