@@ -99,7 +99,7 @@ coap_network_send(struct coap_context_t *context UNUSED_PARAM,
                                  (void*)data,
                                  datalen,
                                  0,
-                                 dst,
+                                 (coap_address_t*)dst,
                                  16);
 }
 
