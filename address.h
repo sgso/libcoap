@@ -181,7 +181,7 @@ static inline void
 coap_address_init(coap_address_t *addr) {
   assert(addr);
   memset(addr, 0, sizeof(coap_address_t));
-#ifndef WITH_LWIP || WITH_RIOT
+#if !defined(WITH_LWIP) && !defined(WITH_RIOT)
   /* lwip has constandt address sizes and doesn't need the .size part */
   addr->size = sizeof(addr->addr);
 #endif
