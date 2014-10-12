@@ -9,7 +9,7 @@
 #include "coap_io.h"
 
 #include "sixlowpan/ip.h"
-#include "destiny/socket.h"
+#include "socket_base/socket.h"
 
 static inline struct coap_endpoint_t *
 coap_malloc_posix_endpoint(void) {
@@ -22,7 +22,7 @@ coap_free_posix_endpoint(struct coap_endpoint_t *ep) {
 }
 
 coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags) {
-  int sockfd = destiny_socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+  int sockfd = socket_base_socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
   struct coap_endpoint_t *ep;
 
@@ -31,9 +31,9 @@ coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags) {
     return NULL;
   }
 
-  if (destiny_socket_bind(sockfd, (coap_address_t*)addr, 16) < 0) {
+  if (socket_base_bind(sockfd, (coap_address_t*)addr, 16) < 0) {
     coap_log(LOG_WARNING, "coap_new_endpoint: bind");
-    destiny_socket_close(sockfd);
+    socket_base_close(sockfd);
     return NULL;
   }
 
@@ -61,7 +61,7 @@ coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags) {
 	    ep->flags & COAP_ENDPOINT_DTLS ? "DTLS " : "",
 	    addr_str);
     }
-    destiny_socket_print_sockets();
+    socket_base_print_sockets();
   }
 #endif /* NDEBUG */
 
@@ -95,7 +95,7 @@ coap_network_send(struct coap_context_t *context UNUSED_PARAM,
 
     assert(local_interface);
   
-    return destiny_socket_sendto(ep->handle,
+    return socket_base_sendto(ep->handle,
                                  (void*)data,
                                  datalen,
                                  0,
@@ -122,11 +122,11 @@ static inline size_t coap_get_max_packetlength(const coap_packet_t *packet UNUSE
   return COAP_MAX_PDU_SIZE;
 }
 
-#ifdef WITH_DESTINY_TIMEOUT
+#ifdef WITH_SOCKET_BASE_TIMEOUT
 ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet, timex_t* timeout) {
 #else
 ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet) {
-#endif /* WITH_DESTINY_TIMEOUT */
+#endif /* WITH_SOCKET_BASE_TIMEOUT */
 
     ssize_t len = -1;
     socklen_t from_len = 0;
@@ -144,9 +144,9 @@ ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet) {
     coap_address_init(&(*packet)->dst); /* the local interface address */
     coap_address_init(&(*packet)->src); /* the remote peer */
 
-#ifdef WITH_DESTINY_TIMEOUT
+#ifdef WITH_SOCKET_BASE_TIMEOUT
     if (timeout) {
-        len = destiny_socket_recvfrom_timeout(ep->handle,
+        len = socket_base_recvfrom_timeout(ep->handle,
                                               &(*packet)->payload,
                                               COAP_MAX_PDU_SIZE,
                                               0,
@@ -154,16 +154,16 @@ ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet) {
                                               &from_len,
                                               timeout);
     } else {
-#endif /* WITH_DESTINY_TIMEOUT */
-        len = destiny_socket_recvfrom(ep->handle,
+#endif /* WITH_SOCKET_BASE_TIMEOUT */
+        len = socket_base_recvfrom(ep->handle,
                                       &(*packet)->payload,
                                       COAP_MAX_PDU_SIZE,
                                       0,
                                       &(*packet)->src,
                                       &from_len);
-#ifdef WITH_DESTINY_TIMEOUT        
+#ifdef WITH_SOCKET_BASE_TIMEOUT        
     }
-#endif /* WITH_DESTINY_TIMEOUT */
+#endif /* WITH_SOCKET_BASE_TIMEOUT */
 
     if (len < 0) {
         coap_free_packet(*packet);

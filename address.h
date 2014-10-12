@@ -146,7 +146,7 @@ case  AF_INET6:
 #endif /* WITH_POSIX && !WITH_RIOT */
 #ifdef WITH_RIOT
 #include "sixlowpan/ip.h"
-#include "destiny/socket.h"
+#include "socket_base/socket.h"
 
 /* RIOT implementation uses ipv6 addresses only */
 typedef sockaddr6_t coap_address_t;

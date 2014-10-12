@@ -29,7 +29,7 @@
 #include "net.h"
 
 #ifdef WITH_RIOT
-#include "destiny/socket.h"
+#include "socket_base/socket.h"
 #endif
 
 #ifdef WITH_CONTIKI
