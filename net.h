@@ -353,7 +353,7 @@ coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node);
  */
 int coap_read(coap_context_t *context);
 
-#ifdef WITH_DESTINY_TIMEOUT
+#ifdef WITH_SOCKET_BASE_TIMEOUT
 /**
  * Reads data from the network with timeout and tries to parse as CoAP
  * PDU. On success, 0 is returned and a new node with the parsed PDU
@@ -361,7 +361,7 @@ int coap_read(coap_context_t *context);
  */
 #include "vtimer.h"
 int coap_try_read(coap_context_t *ctx, timex_t* timeout);
-#endif  /* WITH_DESTINY_TIMEOUT */
+#endif  /* WITH_SOCKET_BASE_TIMEOUT */
 
 /**
  * Parses and interprets a CoAP message with context @p ctx. This function

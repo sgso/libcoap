@@ -96,12 +96,12 @@ ssize_t coap_network_send(struct coap_context_t *context,
  * @return The number of bytes received on success, or a value less than zero 
  *        on error.
  */
-#ifdef WITH_DESTINY_TIMEOUT
+#ifdef WITH_SOCKET_BASE_TIMEOUT
 #include "vtimer.h"
 ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet, timex_t* timeout);
 #else
 ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet);
-#endif /* WITH_DESTINY_TIMEOUT */
+#endif /* WITH_SOCKET_BASE_TIMEOUT */
 
 
 #ifndef coap_mcast_interface

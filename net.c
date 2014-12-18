@@ -823,11 +823,11 @@ int coap_try_read(coap_context_t *ctx, timex_t* timeout) {
 
     /* this is a blocking call when timeout == NULL, 
        e.g when coap_try_read() was called by coap_read() */
-#ifdef WITH_DESTINY_TIMEOUT
+#ifdef WITH_SOCKET_BASE_TIMEOUT
     nbytes = coap_network_read(ctx->endpoint, &packet, timeout);
 #else
     nbytes = coap_network_read(ctx->endpoint, &packet);
-#endif  /* WITH_DESTINY_TIMEOUT */
+#endif  /* WITH_SOCKET_BASE_TIMEOUT */
 
     if (nbytes < 0) {
         if (!timeout) warn("coap_read: recvfrom");
