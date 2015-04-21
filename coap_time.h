@@ -88,6 +88,29 @@ contiki_ticks_impl(coap_tick_t *t) {
 #define coap_ticks contiki_ticks_impl
 
 #endif /* WITH_CONTIKI */
+#ifdef WITH_RIOT
+#include <vtimer.h>
+
+#define COAP_TICKS_PER_SECOND 1024
+
+typedef unsigned int coap_tick_t;
+
+typedef int coap_tick_diff_t;
+
+/* We don't need an offset, we take the uptime */
+#define coap_clock_init()
+
+static inline void riot_ticks_impl(coap_tick_t *t)
+{
+    struct timeval tp;
+    vtimer_gettimeofday(&tp);
+    *t = (tp.tv_sec) * COAP_TICKS_PER_SECOND
+       + (tp.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
+}
+
+#define coap_ticks riot_ticks_impl
+
+#endif /* WITH_RIOT */
 #ifdef WITH_POSIX
 typedef unsigned int coap_tick_t; 
 
