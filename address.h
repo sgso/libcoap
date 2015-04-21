@@ -77,6 +77,22 @@ typedef struct coap_address_t {
 
 #define _coap_is_mcast_impl(Address) uip_is_addr_mcast(&((Address)->addr))
 #endif /* WITH_CONTIKI */
+#ifdef WITH_RIOT
+#include "net/ng_ipv6/addr.h"
+typedef struct __attribute__((packed)) {
+    ng_ipv6_addr_t addr;
+    uint16_t       port;
+} coap_address_t;
+
+#define _coap_address_equals_impl(A,B)                  \
+    ((A)->port == (B)->port                             \
+     && ng_ipv6_addr_equal(&((A)->addr),&((B)->addr)))
+
+#define _coap_address_isany_impl(A) ng_ipv6_addr_is_unspecified(&(A)->addr)
+
+#define _coap_is_mcast_impl(A) ng_ipv6_addr_is_multicast(&(A)->addr)
+
+#endif /* WITH_RIOT */
 #ifdef WITH_POSIX
 
 /** multi-purpose address abstraction */
@@ -156,7 +172,7 @@ static inline void
 coap_address_init(coap_address_t *addr) {
   assert(addr);
   memset(addr, 0, sizeof(coap_address_t));
-#ifndef WITH_LWIP
+#if !defined(WITH_LWIP) && !defined(WITH_RIOT)
   /* lwip has constandt address sizes and doesn't need the .size part */
   addr->size = sizeof(addr->addr);
 #endif
