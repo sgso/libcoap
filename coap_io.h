@@ -26,6 +26,14 @@
 
 #include "address.h"
 
+#ifdef WITH_RIOT
+#include "net/ng_pktbuf.h"
+/**
+ *   On RIOT we use the native ng_pktsnip_t because it has all of the
+ *   below information in it and is already allocated.
+ */
+typedef ng_pktsnip_t coap_packet_t;
+#else
 /**
  * Abstract handle that is used to identify a local network interface.
  */
@@ -45,6 +53,7 @@ typedef struct coap_packet_t {
   size_t length;		/**< length of payload */
   unsigned char payload[];	/**< payload */
 } coap_packet_t;
+#endif  /* WITH_RIOT */
 
 struct coap_context_t;
 
