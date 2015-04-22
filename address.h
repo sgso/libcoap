@@ -81,12 +81,15 @@ typedef struct coap_address_t {
 #include "net/ng_ipv6/addr.h"
 typedef struct __attribute__((packed)) {
     ng_ipv6_addr_t addr;
-    uint16_t       port;
+    network_uint16_t port;
 } coap_address_t;
 
-#define _coap_address_equals_impl(A,B)                  \
-    ((A)->port == (B)->port                             \
-     && ng_ipv6_addr_equal(&((A)->addr),&((B)->addr)))
+static inline int _coap_address_equals_impl(const coap_address_t *a,
+                                            const coap_address_t *b)
+{
+    if (a->port.u16 != b->port.u16) return 0;
+    return ng_ipv6_addr_equal(&a->addr, &b->addr);
+}
 
 #define _coap_address_isany_impl(A) ng_ipv6_addr_is_unspecified(&(A)->addr)
 

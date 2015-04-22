@@ -21,6 +21,9 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 /* #define HAVE_NETINET_IN_H 1 */
 
+#define ntohs(A) NTOHS(A)
+#define htons(A) HTONS(A)
+
 /* Define to 1 if you have the `select' function. */
 /* #undef HAVE_SELECT */
 
@@ -55,7 +58,7 @@
 /* #undef HAVE_SYS_STAT_H */
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-#define HAVE_SYS_TIME_H 1
+/* #define HAVE_SYS_TIME_H 1 */
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -64,7 +67,7 @@
 #define HAVE_SYS_UNISTD_H 1
 
 /* Define to 1 if you have the <time.h> header file. */
-#define HAVE_TIME_H 1
+/* #define HAVE_TIME_H 1 */
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
@@ -113,6 +116,6 @@
 
 #define WITH_RIOT 1
 
-/* #define CUSTOM_COAP_NETWORK_ENDPOINT */
-/* #define CUSTOM_COAP_NETWORK_SEND */
-/* #define CUSTOM_COAP_NETWORK_READ */
+#define CUSTOM_COAP_NETWORK_ENDPOINT
+#define CUSTOM_COAP_NETWORK_SEND
+#define CUSTOM_COAP_NETWORK_READ

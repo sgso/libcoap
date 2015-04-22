@@ -35,7 +35,7 @@
 #include "net/ip/uip-debug.h"
 #endif
 
-static coap_log_t maxlog = LOG_WARNING;	/* default maximum log level */
+static coap_log_t maxlog = LOG_INFO;	/* default maximum log level */
 
 const char *coap_package_name(void) {
   return PACKAGE_NAME;
@@ -79,6 +79,9 @@ print_timestamp(char *s, size_t len, coap_tick_t t) {
 		  (unsigned int)(clock_offset + (t / COAP_TICKS_PER_SECOND)), 
 		  (unsigned int)(t % COAP_TICKS_PER_SECOND));
 #else /* HAVE_SNPRINTF */
+  (void)s;
+  (void)len;
+  (void)t;
   /* @todo do manual conversion of timestamp */
   return 0;
 #endif /* HAVE_SNPRINTF */
@@ -146,6 +149,9 @@ print_readable( const unsigned char *data, unsigned int len,
 
 size_t
 coap_print_addr(const struct coap_address_t *addr, unsigned char *buf, size_t len) {
+    (void)addr;
+    (void)buf;
+    (void)len;
 #ifdef HAVE_ARPA_INET_H
   const void *addrptr = NULL;
   in_port_t port;
@@ -228,7 +234,7 @@ coap_print_addr(const struct coap_address_t *addr, unsigned char *buf, size_t le
   return p - buf;
 # else /* WITH_CONTIKI */
   /* TODO: output addresses manually */
-#   warning "inet_ntop() not available, network addresses will not be included in debug output"
+/* #   warning "inet_ntop() not available, network addresses will not be included in debug output" */
 # endif /* WITH_CONTIKI */
   return 0;
 #endif

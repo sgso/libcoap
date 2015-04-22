@@ -27,6 +27,11 @@
 #define COAP_FREE_TYPE(Type, Object) memp_free(MEMP_COAP_##Type, Object)
 
 #endif
+
+#ifdef WITH_RIOT
+#define WITH_POSIX
+#endif
+
 #ifdef WITH_POSIX
 #include "utlist.h"
 #include "mem.h"
@@ -909,7 +914,7 @@ coap_remove_failed_observers(coap_context_t *context,
 #endif
 	  unsigned char addr[INET6_ADDRSTRLEN+8];
 
-	  if (coap_print_addr(&obs->subscriber, addr, INET6_ADDRSTRLEN+8))
+	  if (coap_print_addr((const struct coap_address_t *)&obs->subscriber, addr, INET6_ADDRSTRLEN+8))
 	    debug("** removed observer %s\n", addr);
 	}
 #endif
@@ -951,3 +956,7 @@ coap_handle_failed_notify(coap_context_t *context,
 #endif /* WITH_CONTIKI */
 }
 #endif /* WITHOUT_NOTIFY */
+
+#ifdef WITH_RIOT
+#undef WITH_POSIX
+#endif  

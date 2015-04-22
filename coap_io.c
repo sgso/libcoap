@@ -447,7 +447,7 @@ coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet) {
 #undef UIP_IP_BUF
 #undef UIP_UDP_BUF
 #endif /* WITH_CONTIKI */
-#ifdef WITH_LWIP
+#if defined(WITH_LWIP) || defined(WITH_RIOT)
 #error "coap_network_read() not implemented on this platform"
 #endif
 

@@ -26,13 +26,24 @@
 
 #include "address.h"
 
+struct coap_context_t;
+
 #ifdef WITH_RIOT
+#include "kernel.h"
 #include "net/ng_pktbuf.h"
+typedef kernel_pid_t coap_if_handle_t;
 /**
  *   On RIOT we use the native ng_pktsnip_t because it has all of the
  *   below information in it and is already allocated.
  */
 typedef ng_pktsnip_t coap_packet_t;
+
+typedef struct coap_endpoint_t {
+    int handle;
+    coap_address_t addr;
+    coap_if_handle_t ifindex;   /**< PID of network interface */
+    uint8_t flags;              /**< flags as defined in netif/hdr.h */
+} coap_endpoint_t;
 #else
 /**
  * Abstract handle that is used to identify a local network interface.
@@ -53,9 +64,7 @@ typedef struct coap_packet_t {
   size_t length;		/**< length of payload */
   unsigned char payload[];	/**< payload */
 } coap_packet_t;
-#endif  /* WITH_RIOT */
 
-struct coap_context_t;
 
 /**
  * Abstraction of virtual endpoint that can be attached to
@@ -68,6 +77,7 @@ typedef struct coap_endpoint_t {
   int ifindex;
   int flags;
 } coap_endpoint_t;
+#endif  /* WITH_RIOT */
 
 #define COAP_ENDPOINT_NOSEC 0x00
 #define COAP_ENDPOINT_DTLS  0x01
@@ -87,11 +97,17 @@ void coap_free_endpoint(coap_endpoint_t *ep);
  * @return The number of bytes written on success, or a value less than zero 
  *        on error.
  */
+#ifdef WITH_RIOT
+ssize_t coap_network_send(struct coap_context_t *context,
+			  const coap_endpoint_t *local_interface,
+			  const coap_address_t *dst,
+			  coap_pdu_t *pdu);
+#else
 ssize_t coap_network_send(struct coap_context_t *context,
 			  const coap_endpoint_t *local_interface,
 			  const coap_address_t *dst,
 			  unsigned char *data, size_t datalen);
-
+#endif /* WITH_RIOT */
 /**
  * Function interface for reading data. This function returns the number
  * of bytes that have been read, or a value less than zero on error. In

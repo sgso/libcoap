@@ -24,6 +24,10 @@
 #include "option.h"
 #include "encode.h"
 
+#ifdef WITH_RIOT
+#include "byteorder.h"
+#endif
+
 #ifdef WITH_CONTIKI
 #include "memb.h"
 
@@ -92,7 +96,7 @@ coap_pdu_init(unsigned char type, unsigned char code,
     return NULL;
 
   /* size must be large enough for hdr */
-#ifdef WITH_POSIX
+#if defined(WITH_POSIX) || defined(WITH_RIOT)
   pdu = coap_malloc(sizeof(coap_pdu_t) + size);
 #endif
 #ifdef WITH_CONTIKI
@@ -141,7 +145,7 @@ coap_new_pdu(void) {
 
 void
 coap_delete_pdu(coap_pdu_t *pdu) {
-#ifdef WITH_POSIX
+#if defined(WITH_POSIX) || defined(WITH_RIOT)
   coap_free( pdu );
 #endif
 #ifdef WITH_LWIP
