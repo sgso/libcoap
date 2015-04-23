@@ -43,7 +43,7 @@
 #define HAVE_STRINGS_H 1
 
 /* Define to 1 if you have the <string.h> header file. */
-#define HAVE_STRING_H 1
+/* #define HAVE_STRING_H 1 */
 
 /* Define to 1 if you have the `strnlen' function. */
 #define HAVE_STRNLEN 1
