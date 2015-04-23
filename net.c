@@ -945,6 +945,8 @@ coap_handle_message(coap_context_t *ctx,
       memcpy(&dst.addr.u8, &((ng_ipv6_hdr_t *)ipv6_snip->data)->dst, sizeof(ng_ipv6_addr_t));
       memcpy(&src.port, &((ng_udp_hdr_t *)udp_snip->data)->src_port, sizeof(network_uint16_t));
       memcpy(&dst.port, &((ng_udp_hdr_t *)udp_snip->data)->dst_port, sizeof(network_uint16_t));
+      dst.port = ntohs(dst.port);
+      src.port = ntohs(src.port);
       memcpy(&if_pid,   &((ng_netif_hdr_t *)netif_snip->data)->if_pid, sizeof(kernel_pid_t));
       memcpy(&if_flags, &((ng_netif_hdr_t *)netif_snip->data)->flags, sizeof(uint8_t));
 

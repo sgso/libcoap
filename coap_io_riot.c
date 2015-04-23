@@ -63,8 +63,8 @@ ssize_t coap_network_send(struct coap_context_t *context,
 
     ng_pktsnip_t *udp_snip =
         ng_netreg_hdr_build(NG_NETTYPE_UDP, pdu_snip,
-                            (uint8_t *)&local_interface->addr.port, sizeof(network_uint16_t),
-                            (uint8_t *)&dst->port, sizeof(network_uint16_t));
+                            (uint8_t *)&local_interface->addr.port, sizeof(uint16_t),
+                            (uint8_t *)&dst->port, sizeof(uint16_t));
     
     ng_pktsnip_t *ipv6_snip =
         ng_netreg_hdr_build(NG_NETTYPE_IPV6, udp_snip,
