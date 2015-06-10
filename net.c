@@ -1469,7 +1469,7 @@ handle_request(coap_context_t *context, coap_queue_t *node) {
 
     case COAP_REQUEST_GET:
       if (is_wkc(key)) {	/* GET request for .well-known/core */
-	info("create default response for %s\n", COAP_DEFAULT_URI_WELLKNOWN);
+        coap_log(LOG_INFO, "create default response for %s\n", COAP_DEFAULT_URI_WELLKNOWN);
 	response = wellknown_response(context, node->pdu);
 
       } else { /* GET request for any another resource, return 4.04 */

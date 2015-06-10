@@ -35,8 +35,6 @@
 #include "net/ip/uip-debug.h"
 #endif
 
-static coap_log_t maxlog = LOG_INFO;	/* default maximum log level */
-
 const char *coap_package_name(void) {
   return PACKAGE_NAME;
 }
@@ -44,21 +42,6 @@ const char *coap_package_name(void) {
 const char *coap_package_version(void) {
   return PACKAGE_STRING;
 }
-
-coap_log_t 
-coap_get_log_level(void) {
-  return maxlog;
-}
-
-void
-coap_set_log_level(coap_log_t level) {
-  maxlog = level;
-}
-
-/* this array has the same order as the type log_t */
-static char *loglevels[] = {
-  "EMRG", "ALRT", "CRIT", "ERR", "WARN", "NOTE", "INFO", "DEBG" 
-};
 
 #ifdef HAVE_TIME_H
 
@@ -308,29 +291,3 @@ coap_show_pdu(const coap_pdu_t *pdu) {
 
 
 #endif /* NDEBUG */
-
-void 
-coap_log_impl(coap_log_t level, const char *format, ...) {
-  char timebuf[32];
-  coap_tick_t now;
-  va_list ap;
-  FILE *log_fd;
-
-  if (maxlog < level)
-    return;
-  
-  log_fd = level <= LOG_CRIT ? COAP_ERR_FD : COAP_DEBUG_FD;
-
-  coap_ticks(&now);
-  if (print_timestamp(timebuf,sizeof(timebuf), now))
-    fprintf(log_fd, "%s ", timebuf);
-
-  if (level <= LOG_DEBUG)
-    fprintf(log_fd, "%s ", loglevels[level]);
-
-  va_start(ap, format);
-  vfprintf(log_fd, format, ap);
-  va_end(ap);
-  fflush(log_fd);
-}
-
