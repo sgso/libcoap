@@ -109,7 +109,7 @@ static inline void riot_ticks_impl(coap_tick_t *t)
 }
 
 #define coap_ticks riot_ticks_impl
-
+extern time_t clock_offset;
 #endif /* WITH_RIOT */
 #ifdef WITH_POSIX
 typedef unsigned int coap_tick_t; 
