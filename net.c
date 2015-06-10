@@ -1695,9 +1695,10 @@ coap_dispatch(coap_context_t *context, coap_queue_t *rcvd) {
 	response =
 	  coap_new_error_response(rcvd->pdu, COAP_RESPONSE_CODE(402), opt_filter);
 
-	if (!response)
+	if (!response) {
 	  warn("coap_dispatch: cannot create error reponse\n");
-	else {
+	}
+        else {
 	  if (coap_send(context, &rcvd->local_if, &rcvd->remote, response)
 	      == COAP_INVALID_TID) {
 	    warn("coap_dispatch: error sending reponse\n");
