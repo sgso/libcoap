@@ -4,10 +4,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-#ifndef UINT_MAX
-#define UINT_MAX ((unsigned) -1ul)
-#endif
-
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #define HAVE_MALLOC 1
@@ -43,7 +39,7 @@
 #define HAVE_STRINGS_H 1
 
 /* Define to 1 if you have the <string.h> header file. */
-/* #define HAVE_STRING_H 1 */
+#define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strnlen' function. */
 #define HAVE_STRNLEN 1
@@ -55,10 +51,10 @@
 /* #define HAVE_SYS_SOCKET_H 1 */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-/* #undef HAVE_SYS_STAT_H */
+#define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-/* #define HAVE_SYS_TIME_H 1 */
+#define HAVE_SYS_TIME_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -67,7 +63,7 @@
 #define HAVE_SYS_UNISTD_H 1
 
 /* Define to 1 if you have the <time.h> header file. */
-/* #define HAVE_TIME_H 1 */
+#define HAVE_TIME_H 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
