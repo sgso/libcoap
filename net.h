@@ -11,12 +11,8 @@ extern "C" {
 
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_TIME_H
 #include <time.h>
-#endif
-#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
 
 #include "option.h"
 #include "coap_io.h"

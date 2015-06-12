@@ -9,9 +9,7 @@
 #ifndef _COAP_MEM_H_
 #define _COAP_MEM_H_
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include <stddef.h>
 
 /**
  * Initializes libcoap's memory management. This function must be
@@ -69,4 +67,4 @@ static inline void coap_free(void *object)
     coap_free_type(COAP_STRING, object);
 }
 
-#endif /* _COAP_MEM_H_ */
+#endif /* COAP_MEM_H_ */

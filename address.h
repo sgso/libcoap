@@ -62,6 +62,7 @@ static inline int coap_address_isany(const coap_address_t *a)
  */
 static inline int coap_is_mcast(const coap_address_t *a)
 {
+    (void)a;
     return 0;                   /* not implemented */
 }
 

@@ -5,10 +5,6 @@
 
 #include <assert.h>
 
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-
 #include "address.h"
 #include "kernel.h"
 #include "net/ng_pktbuf.h"
