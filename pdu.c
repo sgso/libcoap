@@ -24,24 +24,9 @@
 #include "option.h"
 #include "encode.h"
 
-#ifdef WITH_RIOT
 #include "byteorder.h"
-#endif
 
-#ifdef WITH_CONTIKI
-#include "memb.h"
-
-typedef unsigned char _pdu[sizeof(coap_pdu_t) + COAP_MAX_PDU_SIZE];
-
-MEMB(pdu_storage, _pdu, COAP_PDU_MAXCNT);
-
-void
-coap_pdu_resources_init() {
-  memb_init(&pdu_storage);
-}
-#else /* WITH_CONTIKI */
 #include "mem.h"
-#endif /* WITH_CONTIKI */
 
 void
 coap_pdu_clear(coap_pdu_t *pdu, size_t size) {
@@ -56,39 +41,11 @@ coap_pdu_clear(coap_pdu_t *pdu, size_t size) {
   pdu->length = sizeof(coap_hdr_t);
 }
 
-#ifdef WITH_LWIP
-coap_pdu_t *
-coap_pdu_from_pbuf(struct pbuf *pbuf)
-{
-  LWIP_ASSERT("Can only deal with contiguous PBUFs", pbuf->tot_len == pbuf->len);
-  LWIP_ASSERT("coap_read needs to receive an exclusive copy of the incoming pbuf", pbuf->ref == 1);
-
-  void *data = pbuf->payload;
-  coap_pdu_t *result;
-
-  u8_t header_error = pbuf_header(pbuf, sizeof(coap_pdu_t));
-  LWIP_ASSERT("CoAP PDU header does not fit in existing header space", header_error == 0);
-
-  result = (coap_pdu_t *)pbuf->payload;
-
-  memset(result, 0, sizeof(coap_pdu_t));
-
-  result->max_size = pbuf->tot_len - sizeof(coap_pdu_t);
-  result->length = pbuf->tot_len - sizeof(coap_pdu_t);
-  result->hdr = data;
-  result->pbuf = pbuf;
-
-  return result;
-}
-#endif
 
 coap_pdu_t *
 coap_pdu_init(unsigned char type, unsigned char code, 
 	      unsigned short id, size_t size) {
   coap_pdu_t *pdu;
-#ifdef WITH_LWIP
-    struct pbuf *p;
-#endif
 
   assert(size <= COAP_MAX_PDU_SIZE);
   /* Size must be large enough to fit the header. */
@@ -96,32 +53,12 @@ coap_pdu_init(unsigned char type, unsigned char code,
     return NULL;
 
   /* size must be large enough for hdr */
-#if defined(WITH_POSIX) || defined(WITH_RIOT)
   pdu = coap_malloc(sizeof(coap_pdu_t) + size);
-#endif
-#ifdef WITH_CONTIKI
-  pdu = (coap_pdu_t *)memb_alloc(&pdu_storage);
-#endif
-#ifdef WITH_LWIP
-  p = pbuf_alloc(PBUF_TRANSPORT, size, PBUF_RAM);
-  if (p != NULL) {
-    u8_t header_error = pbuf_header(p, sizeof(coap_pdu_t));
-    /* we could catch that case and allocate larger memory in advance, but then
-     * again, we'd run into greater trouble with incoming packages anyway */
-    LWIP_ASSERT("CoAP PDU header does not fit in transport header", header_error == 0);
-    pdu = p->payload;
-  } else {
-    pdu = NULL;
-  }
-#endif
   if (pdu) {
     coap_pdu_clear(pdu, size);
     pdu->hdr->id = id;
     pdu->hdr->type = type;
     pdu->hdr->code = code;
-#ifdef WITH_LWIP
-    pdu->pbuf = p;
-#endif
   } 
   return pdu;
 }
@@ -130,11 +67,7 @@ coap_pdu_t *
 coap_new_pdu(void) {
   coap_pdu_t *pdu;
   
-#ifndef WITH_CONTIKI
   pdu = coap_pdu_init(0, 0, ntohs(COAP_INVALID_TID), COAP_MAX_PDU_SIZE);
-#else /* WITH_CONTIKI */
-  pdu = coap_pdu_init(0, 0, uip_ntohs(COAP_INVALID_TID), COAP_MAX_PDU_SIZE);
-#endif /* WITH_CONTIKI */
 
 #ifndef NDEBUG
   if (!pdu)
@@ -145,16 +78,7 @@ coap_new_pdu(void) {
 
 void
 coap_delete_pdu(coap_pdu_t *pdu) {
-#if defined(WITH_POSIX) || defined(WITH_RIOT)
   coap_free( pdu );
-#endif
-#ifdef WITH_LWIP
-  if (pdu != NULL) /* accepting double free as the other implementation accept that too */
-    pbuf_free(pdu->pbuf);
-#endif
-#ifdef WITH_CONTIKI
-  memb_free(&pdu_storage, pdu);
-#endif
 }
 
 int

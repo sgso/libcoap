@@ -30,18 +30,11 @@
 #include <arpa/inet.h>
 #endif
 
-#ifdef WITH_LWIP
-#include <lwip/pbuf.h>
-#include <lwip/udp.h>
-#include <lwip/timers.h>
-#endif
 
-#ifdef WITH_RIOT
 #include "net/ng_pktbuf.h"
 #include "net/ng_nettype.h"
 #include "net/ng_ipv6/hdr.h"
 #include "net/ng_udp.h"
-#endif
 
 #include "debug.h"
 #include "mem.h"
@@ -53,7 +46,6 @@
 #include "block.h"
 #include "net.h"
 
-#if defined(WITH_POSIX) || defined(WITH_RIOT)
 
 time_t clock_offset;
 
@@ -66,82 +58,6 @@ static inline void
 coap_free_node(coap_queue_t *node) {
   coap_free(node);
 }
-#endif /* WITH_POSIX */
-#ifdef WITH_LWIP
-
-#include <lwip/memp.h>
-
-static void coap_retransmittimer_execute(void *arg);
-static void coap_retransmittimer_restart(coap_context_t *ctx);
-
-static inline coap_queue_t *
-coap_malloc_node() {
-	return (coap_queue_t *)memp_malloc(MEMP_COAP_NODE);
-}
-
-static inline void
-coap_free_node(coap_queue_t *node) {
-	memp_free(MEMP_COAP_NODE, node);
-}
-
-#endif /* WITH_LWIP */
-#ifdef WITH_CONTIKI
-# ifndef DEBUG
-#  define DEBUG DEBUG_PRINT
-# endif /* DEBUG */
-
-#include "mem.h"
-#include "memb.h"
-#include "net/ip/uip-debug.h"
-
-clock_time_t clock_offset;
-
-#define UIP_IP_BUF   ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
-#define UIP_UDP_BUF  ((struct uip_udp_hdr *)&uip_buf[UIP_LLIPH_LEN])
-
-void coap_resources_init();
-void coap_pdu_resources_init();
-
-unsigned char initialized = 0;
-coap_context_t the_coap_context;
-
-MEMB(node_storage, coap_queue_t, COAP_PDU_MAXCNT);
-
-PROCESS(coap_retransmit_process, "message retransmit process");
-
-static inline coap_queue_t *
-coap_malloc_node() {
-  return (coap_queue_t *)memb_alloc(&node_storage);
-}
-
-static inline void
-coap_free_node(coap_queue_t *node) {
-  memb_free(&node_storage, node);
-}
-#endif /* WITH_CONTIKI */
-#ifdef WITH_LWIP
-
-/** Callback to udp_recv when using lwIP. Gets called by lwIP on arriving
- * packages, places a reference in context->pending_package, and calls
- * coap_read to process the package. Thus, coap_read needs not be called in
- * lwIP main loops. (When modifying this for thread-like operation, ie. if you
- * remove the coap_read call from this, make sure that coap_read gets a chance
- * to run before this callback is entered the next time.)
- */
-static void received_package(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
-{
-  struct coap_context_t *context = (coap_context_t *)arg;
-
-  LWIP_ASSERT("pending_package was not cleared.", context->pending_package == NULL);
-
-  context->pending_package = p; /* we don't free it, coap_read has to do that */
-  context->pending_address.addr = addr->addr; /* FIXME: this has to become address-type independent, probably there'll be an lwip function for that */
-  context->pending_port = port;
-
-  coap_read(context);
-}
-
-#endif /* WITH_LWIP */
 
 int print_wellknown(coap_context_t *, unsigned char *, size_t *, size_t, coap_opt_t *);
 
@@ -302,18 +218,7 @@ is_wkc(coap_key_t k) {
 #endif
 
 coap_context_t *coap_new_context(const coap_address_t *listen_addr) {
-#if defined(WITH_POSIX) || defined(WITH_RIOT) // TODO: we shouldn't need malloc here #RIOT
   coap_context_t *c = coap_malloc( sizeof( coap_context_t ) );
-#endif /* WITH_POSIX */
-#ifdef WITH_LWIP
-  coap_context_t *c = memp_malloc(MEMP_COAP_CONTEXT);
-#endif /* WITH_LWIP */
-#ifdef WITH_CONTIKI
-  coap_context_t *c;
-
-  if (initialized)
-    return NULL;
-#endif /* WITH_CONTIKI */
 
   if (!listen_addr) {
     coap_log(LOG_EMERG, "no listen address specified\n");
@@ -321,35 +226,14 @@ coap_context_t *coap_new_context(const coap_address_t *listen_addr) {
   }
 
   coap_clock_init();
-#ifdef WITH_LWIP
-  prng_init(LWIP_RAND());
-#endif /* WITH_LWIP */
-#ifdef WITH_CONTIKI
-  prng_init((ptrdiff_t)listen_addr ^ clock_offset);
-#endif /* WITH_LWIP */
-#ifdef WITH_POSIX
-  prng_init((unsigned long)listen_addr ^ clock_offset);
-#endif /* WITH_POSIX */
-#ifdef WITH_RIOT
   prng_init(NULL);
-#endif /* WITH_RIOT */
 
-#ifndef WITH_CONTIKI
   if (!c) {
 #ifndef NDEBUG
     coap_log(LOG_EMERG, "coap_init: malloc:\n");
 #endif
     return NULL;
   }
-#endif /* not WITH_CONTIKI */
-#ifdef WITH_CONTIKI
-  coap_resources_init();
-  coap_pdu_resources_init();
-  coap_memory_init();
-
-  c = &the_coap_context;
-  initialized = 1;
-#endif /* WITH_CONTIKI */
 
   memset(c, 0, sizeof( coap_context_t ) );
 
@@ -374,43 +258,11 @@ coap_context_t *coap_new_context(const coap_address_t *listen_addr) {
     goto onerror;
   }
 
-#if defined(WITH_RIOT) || defined(WITH_POSIX)
-#ifdef WITH_POSIX
-  c->sockfd = c->endpoint->handle;
-#endif /* WITH_POSIX */
   return c;
 
  onerror:
   coap_free(c);
   return NULL;
-#endif /* defined(WITH_RIOT) || defined(WITH_POSIX) */
-#ifdef WITH_CONTIKI
-  c->conn = udp_new(NULL, 0, NULL);
-  udp_bind(c->conn, listen_addr->port);
-
-  process_start(&coap_retransmit_process, (char *)c);
-
-  PROCESS_CONTEXT_BEGIN(&coap_retransmit_process);
-#ifndef WITHOUT_OBSERVE
-  etimer_set(&c->notify_timer, COAP_RESOURCE_CHECK_TIME * COAP_TICKS_PER_SECOND);
-#endif /* WITHOUT_OBSERVE */
-  /* the retransmit timer must be initialized to some large value */
-  etimer_set(&the_coap_context.retransmit_timer, 0xFFFF);
-  PROCESS_CONTEXT_END(&coap_retransmit_process);
-  return c;
-#endif /* WITH_CONTIKI */
-#ifdef WITH_LWIP
-  c->pcb = udp_new();
-  /* hard assert: this is not expected to fail dynamically */
-  LWIP_ASSERT("Failed to allocate PCB for CoAP", c->pcb != NULL);
-
-  udp_recv(c->pcb, received_package, (void*)c);
-  udp_bind(c->pcb, &listen_addr->addr, listen_addr->port);
-
-  c->timer_configured = 0;
-
-  return c;
-#endif
 }
 
 void
@@ -426,10 +278,6 @@ coap_free_context(coap_context_t *context) {
 
   coap_delete_all(context->sendqueue);
 
-#ifdef WITH_LWIP
-  context->sendqueue = NULL;
-  coap_retransmittimer_restart(context);
-#endif
 
 #if defined(WITH_POSIX) || defined(WITH_LWIP)
 #ifdef COAP_RESOURCES_NOHASH
@@ -442,17 +290,6 @@ coap_free_context(coap_context_t *context) {
 #endif /* WITH_POSIX || WITH_LWIP */
 
   coap_free_endpoint(context->endpoint);
-#ifdef WITH_POSIX
-  coap_free(context);
-#endif
-#ifdef WITH_LWIP
-  udp_remove(context->pcb);
-  memp_free(MEMP_COAP_CONTEXT, context);
-#endif
-#ifdef WITH_CONTIKI
-  memset(&the_coap_context, 0, sizeof(coap_context_t));
-  initialized = 0;
-#endif /* WITH_CONTIKI */
 }
 
 int
@@ -500,24 +337,6 @@ coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
 
   /* Compare the transport address. */
 
-#ifdef WITH_POSIX
-  switch (peer->addr.sa.sa_family) {
-  case AF_INET:
-    coap_hash((const unsigned char *)&peer->addr.sin.sin_port,
-	      sizeof(peer->addr.sin.sin_port), h);
-    coap_hash((const unsigned char *)&peer->addr.sin.sin_addr,
-	      sizeof(peer->addr.sin.sin_addr), h);
-    break;
-  case AF_INET6:
-    coap_hash((const unsigned char *)&peer->addr.sin6.sin6_port,
-	      sizeof(peer->addr.sin6.sin6_port), h);
-    coap_hash((const unsigned char *)&peer->addr.sin6.sin6_addr,
-	      sizeof(peer->addr.sin6.sin6_addr), h);
-    break;
-  default:
-    return;
-  }
-#endif
 #if defined(WITH_LWIP) || defined(WITH_CONTIKI)
     /* FIXME: with lwip, we can do better */
     coap_hash((const unsigned char *)&peer->port, sizeof(peer->port), h);
@@ -548,32 +367,6 @@ coap_send_ack(coap_context_t *context,
   return result;
 }
 
-#ifdef WITH_POSIX
-/* releases space allocated by PDU if free_pdu is set */
-coap_tid_t
-coap_send_impl(coap_context_t *context,
-	       const coap_endpoint_t *local_interface,
-	       const coap_address_t *dst,
-	       coap_pdu_t *pdu) {
-  ssize_t bytes_written;
-  coap_tid_t id = COAP_INVALID_TID;
-
-  if ( !context || !dst || !pdu )
-    return id;
-
-  bytes_written = coap_network_send(context, local_interface, dst,
-				    (unsigned char *)pdu->hdr, pdu->length);
-
-  if (bytes_written >= 0) {
-    coap_transaction_id(dst, pdu, &id);
-  } else {
-    coap_log(LOG_CRIT, "coap_send_impl: %s\n", strerror(errno));
-  }
-
-  return id;
-}
-#endif /* WITH_POSIX */
-#ifdef WITH_RIOT
 coap_tid_t coap_send_impl(coap_context_t *context,
                           const coap_endpoint_t *local_interface,
                           const coap_address_t *dst,
@@ -595,65 +388,7 @@ coap_tid_t coap_send_impl(coap_context_t *context,
 
     return id;
 }
-#endif /* WITH_POSIX */
 
-#ifdef WITH_LWIP
-coap_tid_t
-coap_send_impl(coap_context_t *context,
-	       const coap_endpoint_t *local_interface,
-	       const coap_address_t *dst,
-	       coap_pdu_t *pdu) {
-  coap_tid_t id = COAP_INVALID_TID;
-  struct pbuf *p;
-  uint8_t err;
-  char *data_backup;
-
-  if ( !context || !dst || !pdu )
-  {
-    return id;
-  }
-
-  data_backup = pdu->data;
-
-  /* FIXME: we can't check this here with the existing infrastructure, but we
-   * should actually check that the pdu is not held by anyone but us. the
-   * respective pbuf is already exclusively owned by the pdu. */
-
-  p = pdu->pbuf;
-  LWIP_ASSERT("The PDU header is not where it is expected", pdu->hdr == p->payload + sizeof(coap_pdu_t));
-
-  err = pbuf_header(p, -sizeof(coap_pdu_t));
-  if (err)
-  {
-    debug("coap_send_impl: pbuf_header failed\n");
-    pbuf_free(p);
-    return id;
-  }
-
-  coap_transaction_id(dst, pdu, &id);
-
-  pbuf_realloc(p, pdu->length);
-
-  udp_sendto(context->pcb, p,
-			&dst->addr, dst->port);
-
-  pbuf_header(p, -(ptrdiff_t)((uint8_t*)pdu - (uint8_t*)p->payload) - sizeof(coap_pdu_t)); /* FIXME hack around udp_sendto not restoring; see http://lists.gnu.org/archive/html/lwip-users/2013-06/msg00008.html. for udp over ip over ethernet, this was -42; as we're doing ppp too, this has to be calculated generically */
-
-  err = pbuf_header(p, sizeof(coap_pdu_t));
-  LWIP_ASSERT("Cannot undo pbuf_header", err == 0);
-
-  /* restore destroyed pdu data */
-  LWIP_ASSERT("PDU not restored", p->payload == pdu);
-  pdu->max_size = p->tot_len - sizeof(coap_pdu_t); /* reduced after pbuf_realloc */
-  pdu->hdr = p->payload + sizeof(coap_pdu_t);
-  pdu->max_delta = 0; /* won't be used any more */
-  pdu->length = pdu->max_size;
-  pdu->data = data_backup;
-  pdu->pbuf = p;
-
-  return id;
-}
-#endif /* WITH_LWIP */
 
 coap_tid_t
 coap_send(coap_context_t *context,
@@ -756,24 +491,7 @@ coap_send_confirmed(coap_context_t *context,
 
   coap_insert_node(&context->sendqueue, node);
 
-#ifdef WITH_LWIP
-  if (node == context->sendqueue) /* don't bother with timer stuff if there are earlier retransmits */
-    coap_retransmittimer_restart(context);
-#endif
 
-#ifdef WITH_CONTIKI
-  {			    /* (re-)initialize retransmission timer */
-    coap_queue_t *nextpdu;
-
-    nextpdu = coap_peek_next(context);
-    assert(nextpdu);		/* we have just inserted a node */
-
-    /* must set timer within the context of the retransmit process */
-    PROCESS_CONTEXT_BEGIN(&coap_retransmit_process);
-    etimer_set(&context->retransmit_timer, nextpdu->t);
-    PROCESS_CONTEXT_END(&coap_retransmit_process);
-  }
-#endif /* WITH_CONTIKI */
 
   return node->id;
 }
@@ -788,10 +506,6 @@ coap_retransmit(coap_context_t *context, coap_queue_t *node) {
     node->retransmit_cnt++;
     node->t = node->timeout << node->retransmit_cnt;
     coap_insert_node(&context->sendqueue, node);
-#ifdef WITH_LWIP
-    if (node == context->sendqueue) /* don't bother with timer stuff if there are earlier retransmits */
-      coap_retransmittimer_restart(context);
-#endif
 
     debug("** retransmission #%d of transaction %d\n",
 	  node->retransmit_cnt, ntohs(node->pdu->hdr->id));
@@ -803,9 +517,7 @@ coap_retransmit(coap_context_t *context, coap_queue_t *node) {
 
   /* no more retransmissions, remove node from system */
 
-#ifndef WITH_CONTIKI
   debug("** removed transaction %d\n", ntohs(node->id));
-#endif
 
 #ifndef WITHOUT_OBSERVE
   /* Check if subscriptions exist that should be canceled after
@@ -852,60 +564,13 @@ coap_read( coap_context_t *ctx ) {
   coap_address_t src;
   int result = -1;		/* the value to be returned */
 
-#ifdef WITH_CONTIKI
-  buf = uip_appdata;
-#endif /* WITH_CONTIKI */
-#ifdef WITH_LWIP
-  LWIP_ASSERT("No package pending", ctx->pending_package != NULL);
-  LWIP_ASSERT("Can only deal with contiguous PBUFs to read the initial details", ctx->pending_package->tot_len == ctx->pending_package->len);
-  buf = ctx->pending_package->payload;
-#endif /* WITH_LWIP */
 
   coap_address_init(&src);
 
-#ifdef WITH_POSIX
-  bytes_read = coap_network_read(ctx->endpoint, &packet);
-#endif /* WITH_POSIX */
-#ifdef WITH_CONTIKI
-  if(uip_newdata()) {
-    uip_ipaddr_copy(&src.addr, &UIP_IP_BUF->srcipaddr);
-    src.port = UIP_UDP_BUF->srcport;
-    uip_ipaddr_copy(&dst.addr, &UIP_IP_BUF->destipaddr);
-    dst.port = UIP_UDP_BUF->destport;
-
-    bytes_read = uip_datalen();
-    ((char *)uip_appdata)[bytes_read] = 0;
-    PRINTF("Server received %d bytes from [", (int)bytes_read);
-    PRINT6ADDR(&src.addr);
-    PRINTF("]:%d\n", uip_ntohs(src.port));
-  }
-#endif /* WITH_CONTIKI */
-#ifdef WITH_LWIP
-  /* FIXME: use lwip address operation functions */
-  src.addr.addr = ctx->pending_address.addr;
-  src.port = ctx->pending_port;
-  bytes_read = ctx->pending_package->tot_len;
-#endif /* WITH_LWIP */
 
   if ( bytes_read < 0 ) {
     warn("coap_read: recvfrom");
   } else {
-#ifdef WITH_POSIX
-    /* FIXME: make sure that dst == ctx->endpoint->addr */
-    if (coap_address_isany(&ctx->endpoint->addr) ||
-	coap_address_equals(&packet->dst, &ctx->endpoint->addr)) {
-      result = coap_handle_message(ctx, ctx->endpoint, packet);
-    } else {
-      coap_log(LOG_DEBUG, "packet received on wrong interface, dropped\n");
-    }
-#endif /* WITH_POSIX */
-#ifdef WITH_LWIP
-    result = coap_handle_message(ctx, &src,
-      (unsigned char *)ctx->pending_package bytes_read);
-#endif /* WITH_LWIP */
-#ifdef WITH_CONTIKI
-    result = coap_handle_message(ctx, &src, uip_appdata, bytes_read);
-#endif /* WITH_CONTIKI */
   }
 
   coap_free_packet(packet);
@@ -923,11 +588,6 @@ coap_handle_message(coap_context_t *ctx,
     enum result_t { RESULT_OK, RESULT_ERR_EARLY, RESULT_ERR };
     int result = RESULT_ERR_EARLY;
 
-#ifndef WITH_RIOT
-  const coap_address_t *remote = &packet->src;
-  unsigned char *msg = packet->payload;
-  size_t msg_len = packet->length;
-#else
   ng_pktsnip_t *udp_snip = NULL, *ipv6_snip = NULL, *netif_snip = NULL;
   coap_address_t src, dst;
   kernel_pid_t if_pid;
@@ -972,7 +632,6 @@ coap_handle_message(coap_context_t *ctx,
 
   size_t msg_len = packet->size;
   unsigned char *msg = packet->data;
-#endif
   coap_queue_t *node;
 
   if (msg_len < sizeof(coap_hdr_t)) {
@@ -994,12 +653,7 @@ coap_handle_message(coap_context_t *ctx,
   /* from this point, the result code indicates that */
   result = RESULT_ERR;
 
-#ifdef WITH_LWIP
-  node->pdu = coap_pdu_from_pbuf(ctx->pending_package);
-  ctx->pending_package = NULL;
-#else
   node->pdu = coap_pdu_init(0, 0, 0, msg_len);
-#endif
   if (!node->pdu) {
     goto error;
   }
@@ -1007,15 +661,9 @@ coap_handle_message(coap_context_t *ctx,
   coap_ticks(&node->t);
 
   node->local_if.handle = local_interface->handle;
-#ifdef WITH_RIOT
   memcpy(&node->local_if.addr, &dst, sizeof(node->local_if.addr));
   node->local_if.ifindex = if_pid;
   node->local_if.flags = if_flags;
-#else
-  memcpy(&node->local_if.addr, &packet->dst, sizeof(node->local_if.addr));
-  node->local_if.ifindex = packet->ifindex;
-  node->local_if.flags = 0; /* FIXME */
-#endif /* WITH_RIOT */
 
   memcpy(&node->remote, &src, sizeof(coap_address_t));
 
@@ -1035,14 +683,6 @@ coap_handle_message(coap_context_t *ctx,
 #define INET6_ADDRSTRLEN 40
 #endif
 
-#ifndef WITH_RIOT
-    unsigned char addr[INET6_ADDRSTRLEN+8], localaddr[INET6_ADDRSTRLEN+8];
-
-    if (coap_print_addr(remote, addr, INET6_ADDRSTRLEN+8) &&
-	coap_print_addr(&packet->dst, localaddr, INET6_ADDRSTRLEN+8) )
-      debug("** received %d bytes from %s on interface %s:\n",
-	    (int)msg_len, addr, localaddr);
-#endif
 
     coap_show_pdu(node->pdu);
   }
@@ -1057,11 +697,6 @@ coap_handle_message(coap_context_t *ctx,
   return -result;
 
  error_early:
-#ifdef WITH_LWIP
-  /* even if there was an error, clean up */
-  pbuf_free(ctx->pending_package);
-  ctx->pending_package = NULL;
-#endif
   return -result;
 }
 
@@ -1669,11 +1304,7 @@ coap_dispatch(coap_context_t *context, coap_queue_t *rcvd) {
        * not only the transaction but also the subscriptions we might
        * have. */
 
-#ifndef WITH_CONTIKI
       coap_log(LOG_ALERT, "got RST for message %u\n", ntohs(rcvd->pdu->hdr->id));
-#else /* WITH_CONTIKI */
-      coap_log(LOG_ALERT, "got RST for message %u\n", uip_ntohs(rcvd->pdu->hdr->id));
-#endif /* WITH_CONTIKI */
 
       /* find transaction in sendqueue to stop retransmission */
       coap_remove_from_queue(&context->sendqueue, rcvd->id, &sent);
@@ -1738,131 +1369,4 @@ coap_can_exit( coap_context_t *context ) {
   return !context || (context->sendqueue == NULL);
 }
 
-#ifdef WITH_CONTIKI
 
-/*---------------------------------------------------------------------------*/
-/* CoAP message retransmission */
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(coap_retransmit_process, ev, data)
-{
-  coap_tick_t now;
-  coap_queue_t *nextpdu;
-
-  PROCESS_BEGIN();
-
-  debug("Started retransmit process\r\n");
-
-  while(1) {
-    PROCESS_YIELD();
-    if (ev == PROCESS_EVENT_TIMER) {
-      if (etimer_expired(&the_coap_context.retransmit_timer)) {
-
-	nextpdu = coap_peek_next(&the_coap_context);
-
-	coap_ticks(&now);
-	while (nextpdu && nextpdu->t <= now) {
-	  coap_retransmit(&the_coap_context, coap_pop_next(&the_coap_context));
-	  nextpdu = coap_peek_next(&the_coap_context);
-	}
-
-	/* need to set timer to some value even if no nextpdu is available */
-	etimer_set(&the_coap_context.retransmit_timer,
-		   nextpdu ? nextpdu->t - now : 0xFFFF);
-      }
-#ifndef WITHOUT_OBSERVE
-      if (etimer_expired(&the_coap_context.notify_timer)) {
-	coap_check_notify(&the_coap_context);
-	etimer_reset(&the_coap_context.notify_timer);
-      }
-#endif /* WITHOUT_OBSERVE */
-    }
-  }
-
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
-
-#endif /* WITH_CONTIKI */
-
-#ifdef WITH_LWIP
-/* FIXME: retransmits that are not required any more due to incoming packages
- * do *not* get cleared at the moment, the wakeup when the transmission is due
- * is silently accepted. this is mainly due to the fact that the required
- * checks are similar in two places in the code (when receiving ACK and RST)
- * and that they cause more than one patch chunk, as it must be first checked
- * whether the sendqueue item to be dropped is the next one pending, and later
- * the restart function has to be called. nothing insurmountable, but it can
- * also be implemented when things have stabilized, and the performance
- * penality is minimal
- *
- * also, this completely ignores COAP_RESOURCE_CHECK_TIME.
- * */
-
-static void coap_retransmittimer_execute(void *arg)
-{
-	coap_context_t *ctx = (coap_context_t*)arg;
-	coap_tick_t now;
-	coap_tick_t elapsed;
-	coap_queue_t *nextinqueue;
-
-	ctx->timer_configured = 0;
-
-	coap_ticks(&now);
-
-	elapsed = now - ctx->sendqueue_basetime; /* that's positive for sure, and unless we haven't been called for a complete wrapping cycle, did not wrap */
-
-	nextinqueue = coap_peek_next(ctx);
-	while (nextinqueue != NULL)
-	{
-		if (nextinqueue->t > elapsed) {
-			nextinqueue->t -= elapsed;
-			break;
-		} else {
-			elapsed -= nextinqueue->t;
-			coap_retransmit(ctx, coap_pop_next(ctx));
-			nextinqueue = coap_peek_next(ctx);
-		}
-	}
-
-	ctx->sendqueue_basetime = now;
-
-	coap_retransmittimer_restart(ctx);
-}
-
-static void coap_retransmittimer_restart(coap_context_t *ctx)
-{
-	coap_tick_t now, elapsed, delay;
-
-	if (ctx->timer_configured)
-	{
-		printf("clearing\n");
-		sys_untimeout(coap_retransmittimer_execute, (void*)ctx);
-		ctx->timer_configured = 0;
-	}
-	if (ctx->sendqueue != NULL)
-	{
-		coap_ticks(&now);
-		elapsed = now - ctx->sendqueue_basetime;
-		if (ctx->sendqueue->t >= elapsed) {
-			delay = ctx->sendqueue->t - elapsed;
-		} else {
-			/* a strange situation, but not completely impossible.
-			 *
-			 * this happens, for example, right after
-			 * coap_retransmittimer_execute, when a retransmission
-			 * was *just not yet* due, and the clock ticked before
-			 * our coap_ticks was called.
-			 *
-			 * not trying to retransmit anything now, as it might
-			 * cause uncontrollable recursion; let's just try again
-			 * with the next main loop run.
-			 * */
-			delay = 0;
-		}
-
-		printf("scheduling for %d ticks\n", delay);
-		sys_timeout(delay, coap_retransmittimer_execute, (void*)ctx);
-		ctx->timer_configured = 1;
-	}
-}
-#endif

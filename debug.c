@@ -28,12 +28,6 @@
 #include "debug.h"
 #include "net.h"
 
-#ifdef WITH_CONTIKI
-# ifndef DEBUG
-#  define DEBUG DEBUG_PRINT
-# endif /* DEBUG */
-#include "net/ip/uip-debug.h"
-#endif
 
 const char *coap_package_name(void) {
   return PACKAGE_NAME;
@@ -178,61 +172,12 @@ coap_print_addr(const struct coap_address_t *addr, unsigned char *buf, size_t le
 
   return buf + len - p;
 #else /* HAVE_ARPA_INET_H */
-# if WITH_CONTIKI
-  unsigned char *p = buf;
-  uint8_t i;
-#  if WITH_UIP6
-  const unsigned char hex[] = "0123456789ABCDEF";
-
-  if (len < 41)
-    return 0;
-
-  *p++ = '[';
-
-  for (i=0; i < 16; i += 2) {
-    if (i) {
-      *p++ = ':';
-    }
-    *p++ = hex[(addr->addr.u8[i] & 0xf0) >> 4];
-    *p++ = hex[(addr->addr.u8[i] & 0x0f)];
-    *p++ = hex[(addr->addr.u8[i+1] & 0xf0) >> 4];
-    *p++ = hex[(addr->addr.u8[i+1] & 0x0f)];
-  }
-  *p++ = ']';
-#  else /* WITH_UIP6 */
-#   warning "IPv4 network addresses will not be included in debug output"
-
-  if (len < 21)
-    return 0;
-#  endif /* WITH_UIP6 */
-  if (buf + len - p < 6)
-    return 0;
-
-#ifdef HAVE_SNPRINTF
-  p += snprintf((char *)p, buf + len - p + 1, ":%d", uip_htons(addr->port));
-#else /* HAVE_SNPRINTF */
-  /* @todo manual conversion of port number */
-#endif /* HAVE_SNPRINTF */
-
-  return p - buf;
-# else /* WITH_CONTIKI */
   /* TODO: output addresses manually */
 /* #   warning "inet_ntop() not available, network addresses will not be included in debug output" */
-# endif /* WITH_CONTIKI */
   return 0;
 #endif
 }
 
-#ifdef WITH_CONTIKI
-# define fprintf(fd, ...) PRINTF(__VA_ARGS__)
-# define fflush(...)
-
-# ifdef HAVE_VPRINTF
-#  define vfprintf(fd, ...) vprintf(__VA_ARGS__)
-# else /* HAVE_VPRINTF */
-#  define vfprintf(fd, ...) PRINTF(__VA_ARGS__)
-# endif /* HAVE_VPRINTF */
-#endif /* WITH_CONTIKI */
 
 void
 coap_show_pdu(const coap_pdu_t *pdu) {

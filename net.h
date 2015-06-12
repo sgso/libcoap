@@ -36,9 +36,6 @@ extern "C" {
 #include <sys/time.h>
 #endif
 
-#ifdef WITH_LWIP
-#include <lwip/ip_addr.h>
-#endif
 
 #include "option.h"
 #include "coap_io.h"
@@ -110,23 +107,6 @@ typedef struct coap_context_t {
   coap_tick_t sendqueue_basetime;
   coap_queue_t *sendqueue;
   coap_endpoint_t *endpoint;	/**< the endpoint used for listening  */
-#ifdef WITH_POSIX
-  int sockfd;			/**< send/receive socket */
-#endif /* WITH_POSIX */
-#ifdef WITH_CONTIKI
-  struct uip_udp_conn *conn;	/**< uIP connection object */
-  
-  struct etimer retransmit_timer; /**< fires when the next packet must be sent */
-  struct etimer notify_timer;     /**< used to check resources periodically */
-#endif /* WITH_CONTIKI */
-#ifdef WITH_LWIP
-  struct udp_pcb *pcb; /**< the underlying lwIP UDP PCB */
-  struct pbuf *pending_package; /**< pbuf containing the last received package if not handled yet. This is only used to pass the package from the udp_recv callback into the coap_read function, which frees the pbuf and clears this field. */
-  ip_addr_t pending_address; /**< the address associated with pending_package */
-  u16_t pending_port; /**< the port associated with pending_package */
-
-  uint8_t timer_configured; /**< Set to 1 when a retransmission is scheduled using lwIP timers for this context, otherwise 0. */
-#endif /* WITH_LWIP */
 
   /**
    * The last message id that was used is stored in this field.  The
@@ -197,12 +177,8 @@ coap_context_t *coap_new_context(const coap_address_t *listen_addr);
  */
 static inline unsigned short 
 coap_new_message_id(coap_context_t *context) {
-#ifndef WITH_CONTIKI
   context->message_id++;
   return htons(context->message_id);
-#else /* WITH_CONTIKI */
-  return uip_htons(++context->message_id);
-#endif
 }
 
 /* CoAP stack context must be released with coap_free_context(). This
