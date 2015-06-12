@@ -1,4 +1,3 @@
-#include "config.h"
 #include "debug.h"
 #include "mem.h"
 #include "net.h"

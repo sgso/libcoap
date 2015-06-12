@@ -13,7 +13,6 @@
 extern "C" {
 #endif
 
-#include "config.h"
 #include "vtimer.h"
     
 /**

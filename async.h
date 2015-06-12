@@ -13,7 +13,6 @@
 #ifndef COAP_ASYNC_H_
 #define COAP_ASYNC_H_
 
-#include "config.h"
 
 #include "net.h"
 

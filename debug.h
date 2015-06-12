@@ -1,7 +1,6 @@
 #ifndef COAP_DEBUG_H_
 #define COAP_DEBUG_H_
 
-#include "config.h"
 #include "log.h"
 
 #ifndef COAP_DEBUG_FD

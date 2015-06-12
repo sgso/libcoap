@@ -6,7 +6,6 @@
 #ifndef COAP_PRNG_H_
 #define COAP_PRNG_H_
 
-#include "config.h"
 
 /**
  * @defgroup prng Pseudo Random Numbers

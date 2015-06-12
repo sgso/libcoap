@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-#include "config.h"
 #include "debug.h"
 #include "mem.h"
 #include "coap_list.h"

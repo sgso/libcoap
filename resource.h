@@ -1,7 +1,6 @@
 #ifndef COAP_RESOURCE_H_
 #define COAP_RESOURCE_H_
 
-#include "config.h"
 #include "t_list.h"
 
 #include <assert.h>

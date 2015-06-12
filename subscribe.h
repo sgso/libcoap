@@ -1,7 +1,6 @@
 #ifndef COAP_SUBSCRIBE_H_
 #define COAP_SUBSCRIBE_H_
 
-#include "config.h"
 #include "address.h"
 #include "coap_io.h"
 

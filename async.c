@@ -5,7 +5,6 @@
 
 #ifndef WITHOUT_ASYNC
 
-#include "config.h"
 
 #include "async.h"
 #include "debug.h"

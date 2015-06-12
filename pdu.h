@@ -1,7 +1,6 @@
 #ifndef COAP_PDU_H_
 #define COAP_PDU_H_
 
-#include "config.h"
 #include "coap_list.h"
 #include "uri.h"
 

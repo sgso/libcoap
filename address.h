@@ -6,7 +6,6 @@
 #ifndef COAP_ADDRESS_H_
 #define COAP_ADDRESS_H_
 
-#include "config.h"
 
 #include <assert.h>
 #include <stdint.h>

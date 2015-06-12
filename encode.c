@@ -1,4 +1,3 @@
-#include "config.h"
 #include "encode.h"
 
 /* Carsten suggested this when fls() is not available: */

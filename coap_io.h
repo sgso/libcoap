@@ -1,7 +1,6 @@
 #ifndef COAP_IO_H_
 #define COAP_IO_H_
 
-#include "config.h"
 
 #include <assert.h>
 
