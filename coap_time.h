@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 #include "vtimer.h"
-    
+
 /**
  * @defgroup clock Clock Handling
  * Default implementation of internal clock. You should redefine this if
@@ -28,13 +28,13 @@ typedef unsigned int coap_tick_t;
 
 typedef int coap_tick_diff_t;
 extern time_t clock_offset;
-    
+
 static inline void coap_ticks(coap_tick_t *t)
 {
     struct timeval tp;
     vtimer_gettimeofday(&tp);
-    *t =  (tp.tv_sec) * COAP_TICKS_PER_SECOND
-        + (tp.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
+    *t = (tp.tv_sec) * COAP_TICKS_PER_SECOND
+         + (tp.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
 }
 
 static inline void coap_clock_init(void)

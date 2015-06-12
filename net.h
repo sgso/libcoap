@@ -107,7 +107,7 @@ typedef struct coap_context_t {
  * @param handler The response handler to register.
  */
 static inline void coap_register_response_handler(coap_context_t *context,
-                                                  coap_response_handler_t handler)
+        coap_response_handler_t handler)
 {
     context->response_handler = handler;
 }

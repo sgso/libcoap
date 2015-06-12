@@ -204,8 +204,8 @@ coap_print_status_t coap_print_link(const coap_resource_t *resource,
  * @param handler  The handler to register with @p resource.
  */
 static inline void coap_register_handler(coap_resource_t *resource,
-                                         unsigned char method,
-                                         coap_method_handler_t handler)
+        unsigned char method,
+        coap_method_handler_t handler)
 {
     assert(resource);
     assert(method > 0
@@ -314,7 +314,7 @@ typedef struct coap_iterator_t {
 } coap_iterator_t ;
 
 coap_iterator_t *coap_resource_iterator_init(coap_resource_t *resources,
-                                             coap_iterator_t *ri);
+        coap_iterator_t *ri);
 
 coap_resource_t *coap_resource_next(coap_iterator_t *ri);
 

@@ -113,7 +113,7 @@ size_t coap_opt_parse(const coap_opt_t *opt, size_t length, coap_option_t *resul
 }
 
 coap_opt_iterator_t *coap_option_iterator_init(coap_pdu_t *pdu, coap_opt_iterator_t *oi,
-                                               const coap_opt_filter_t filter)
+        const coap_opt_filter_t filter)
 {
     assert(pdu);
     assert(pdu->hdr);

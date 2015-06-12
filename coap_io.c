@@ -26,7 +26,8 @@ coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags)
     return ep;
 }
 
-void coap_free_endpoint(coap_endpoint_t *ep) {
+void coap_free_endpoint(coap_endpoint_t *ep)
+{
     if (ep) {
         coap_free(ep);
     }

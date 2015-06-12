@@ -74,6 +74,7 @@ void notify(coap_context_t *context, coap_resource_t *res,
     }
 
 #ifndef NDEBUG
+
     if (inet_ntop(sub->subscriber.addr.sa.sa_family,
                   &sub->subscriber.addr, addr, sizeof(addr))) {
         debug("*** notify for %s to [%s]\n", res->uri->path.s, addr);
@@ -252,9 +253,9 @@ int coap_delete_resource(coap_context_t *context, coap_key_t key)
 #endif
 
 coap_subscription_t *coap_new_subscription(coap_context_t *context,
-                                           const coap_uri_t *resource,
-                                           const struct sockaddr *addr,
-                                           socklen_t addrlen, time_t expiry)
+        const coap_uri_t *resource,
+        const struct sockaddr *addr,
+        socklen_t addrlen, time_t expiry)
 {
     coap_subscription_t *result;
 
@@ -336,9 +337,9 @@ coap_key_t coap_add_subscription(coap_context_t *context,
 }
 
 coap_subscription_t *coap_find_subscription(coap_context_t *context,
-                                            coap_key_t hashkey,
-                                            struct sockaddr *addr,
-                                            str *token)
+        coap_key_t hashkey,
+        struct sockaddr *addr,
+        str *token)
 {
 #if 0
     coap_list_t *node;

@@ -13,10 +13,12 @@
 
 #include "net/ng_ipv6/addr.h"
 
-typedef struct __attribute__((packed)) {
+typedef struct __attribute__((packed))
+{
     ng_ipv6_addr_t addr;
     uint16_t port;
-} coap_address_t;
+}
+coap_address_t;
 
 /**
  * Resets the given coap_address_t object @p addr to its default

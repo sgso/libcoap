@@ -88,9 +88,9 @@ typedef struct {
  * @return The initialized iterator object @p pi.
  */
 coap_parse_iterator_t *coap_parse_iterator_init(unsigned char *s, size_t n,
-                                                unsigned char separator,
-                                                unsigned char *delim, size_t dlen,
-                                                coap_parse_iterator_t *pi);
+        unsigned char separator,
+        unsigned char *delim, size_t dlen,
+        coap_parse_iterator_t *pi);
 
 /**
  * Updates the iterator @p pi to point to the next token. This

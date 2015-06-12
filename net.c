@@ -265,8 +265,8 @@ void coap_free_context(coap_context_t *context)
 }
 
 int coap_option_check_critical(coap_context_t *ctx,
-                           coap_pdu_t *pdu,
-                           coap_opt_filter_t unknown)
+                               coap_pdu_t *pdu,
+                               coap_opt_filter_t unknown)
 {
     coap_opt_iterator_t opt_iter;
     int ok = 1;
@@ -300,7 +300,7 @@ int coap_option_check_critical(coap_context_t *ctx,
 }
 
 void coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
-                    coap_tid_t *id)
+                         coap_tid_t *id)
 {
     (void)peer;
     coap_key_t h;
@@ -314,9 +314,9 @@ void coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
 }
 
 coap_tid_t coap_send_ack(coap_context_t *context,
-              const coap_endpoint_t *local_interface,
-              const coap_address_t *dst,
-              coap_pdu_t *request)
+                         const coap_endpoint_t *local_interface,
+                         const coap_address_t *dst,
+                         coap_pdu_t *request)
 {
     coap_pdu_t *response;
     coap_tid_t result = COAP_INVALID_TID;
@@ -497,6 +497,7 @@ coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node)
     debug("** removed transaction %d\n", NTOHS(node->id));
 
 #ifndef WITHOUT_OBSERVE
+
     /* Check if subscriptions exist that should be canceled after
        COAP_MAX_NOTIFY_FAILURES */
     if (node->pdu->hdr->code >= 64) {
@@ -908,8 +909,7 @@ static inline size_t get_wkc_len(coap_context_t *context, coap_opt_t *query_filt
     size_t len = 0;
 
     if (print_wellknown(context, buf, &len, UINT_MAX, query_filter)
-        & COAP_PRINT_STATUS_ERROR)
-    {
+        & COAP_PRINT_STATUS_ERROR) {
         warn("cannot determine length of /.well-known/core\n");
         return 0;
     }

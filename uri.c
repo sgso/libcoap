@@ -491,9 +491,9 @@ int coap_hash_path(const unsigned char *path, size_t len, coap_key_t key)
 /* iterator functions */
 
 coap_parse_iterator_t *coap_parse_iterator_init(unsigned char *s, size_t n,
-                                                unsigned char separator,
-                                                unsigned char *delim, size_t dlen,
-                                                coap_parse_iterator_t *pi)
+        unsigned char separator,
+        unsigned char *delim, size_t dlen,
+        coap_parse_iterator_t *pi)
 {
     assert(pi);
     assert(separator);

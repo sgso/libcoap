@@ -54,7 +54,7 @@ void *coap_iterator_next(coap_iterator_t *ri)
   } else {                                              \
     (Offset)--;                                         \
   }                                                     \
-
+ 
 /**
  * Adds Char to Buf if Offset is zero and Buf is less than Bufend.
  */
@@ -729,9 +729,9 @@ void coap_check_notify(coap_context_t *context)
  * @param token    The token that has been used for subscription.
  */
 static void coap_remove_failed_observers(coap_context_t *context,
-                                         coap_resource_t *resource,
-                                         const coap_address_t *peer,
-                                         const str *token)
+        coap_resource_t *resource,
+        const coap_address_t *peer,
+        const str *token)
 {
     coap_subscription_t *obs;
 
@@ -756,6 +756,7 @@ static void coap_remove_failed_observers(coap_context_t *context,
                 COAP_FREE_TYPE(subscription, obs);
             }
         }
+
         break;                  /* break loop if observer was found */
     }
 }

@@ -179,8 +179,8 @@ typedef struct {
  * @return The iterator object @p oi on success, @c NULL otherwise.
  */
 coap_opt_iterator_t *coap_option_iterator_init(coap_pdu_t *pdu,
-                                               coap_opt_iterator_t *oi,
-                                               const coap_opt_filter_t filter);
+        coap_opt_iterator_t *oi,
+        const coap_opt_filter_t filter);
 
 /**
  * Updates the iterator @p oi to point to the next option. This
