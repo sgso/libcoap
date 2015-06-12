@@ -121,7 +121,7 @@ char *coap_response_phrase(unsigned char code);
 typedef int coap_tid_t;
 #define COAP_INVALID_TID -1
 
-#ifdef WORDS_BIGENDIAN
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 typedef struct {
     unsigned int version: 2;       /* protocol version */
     unsigned int type: 2;          /* type flag */
@@ -132,7 +132,7 @@ typedef struct {
     unsigned short id;             /* message id */
     unsigned char token[];         /* the actual token, if any */
 } coap_hdr_t;
-#else
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 typedef struct {
     unsigned int token_length: 4;  /* length of Token */
     unsigned int type: 2;          /* type flag */
@@ -143,6 +143,8 @@ typedef struct {
     unsigned short id;             /* transaction id (network byte order!) */
     unsigned char token[];         /* the actual token, if any */
 } coap_hdr_t;
+#else
+#error "Please check your endianness!"
 #endif
 
 #define COAP_MESSAGE_IS_EMPTY(MSG)    ((MSG)->code == 0)
