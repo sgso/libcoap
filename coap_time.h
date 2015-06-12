@@ -3,10 +3,10 @@
  * Copyright (C) 2010--2013 Olaf Bergmann <bergmann@tzi.org>
  *
  * This file is part of the CoAP library libcoap. Please see
- * README for terms of use. 
+ * README for terms of use.
  */
 
-/** 
+/**
  * @file coap_time.h
  * @brief Clock Handling
  */
@@ -47,7 +47,7 @@ static inline void riot_ticks_impl(coap_tick_t *t)
     struct timeval tp;
     vtimer_gettimeofday(&tp);
     *t = (tp.tv_sec) * COAP_TICKS_PER_SECOND
-       + (tp.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
+         + (tp.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
 }
 
 #define coap_ticks riot_ticks_impl
@@ -55,16 +55,17 @@ extern time_t clock_offset;
 
 #ifndef coap_clock_init
 static inline void
-coap_clock_init_impl(void) {
+coap_clock_init_impl(void)
+{
 #ifdef HAVE_TIME_H
-  clock_offset = time(NULL);
+    clock_offset = time(NULL);
 #else
 #  ifdef __GNUC__
-    /* Issue a warning when using gcc. Other prepropressors do 
-     *  not seem to have a similar feature. */ 
+    /* Issue a warning when using gcc. Other prepropressors do
+     *  not seem to have a similar feature. */
 #   warning "cannot initialize clock"
 #  endif
-  clock_offset = 0;
+    clock_offset = 0;
 #endif
 }
 #define coap_clock_init coap_clock_init_impl
@@ -72,12 +73,13 @@ coap_clock_init_impl(void) {
 
 #ifndef coap_ticks
 static inline void
-coap_ticks_impl(coap_tick_t *t) {
+coap_ticks_impl(coap_tick_t *t)
+{
 #ifdef HAVE_SYS_TIME_H
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  *t = (tv.tv_sec - clock_offset) * COAP_TICKS_PER_SECOND 
-    + (tv.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    *t = (tv.tv_sec - clock_offset) * COAP_TICKS_PER_SECOND
+         + (tv.tv_usec * COAP_TICKS_PER_SECOND / 1000000);
 #else
 #error "clock not implemented"
 #endif
@@ -90,8 +92,9 @@ coap_ticks_impl(coap_tick_t *t) {
  * defined on a signed data type.
  */
 static inline
-int coap_time_lt(coap_tick_t a, coap_tick_t b) {
-  return ((coap_tick_diff_t)(a - b)) < 0;
+int coap_time_lt(coap_tick_t a, coap_tick_t b)
+{
+    return ((coap_tick_diff_t)(a - b)) < 0;
 }
 
 /**
@@ -99,8 +102,9 @@ int coap_time_lt(coap_tick_t a, coap_tick_t b) {
  * less is defined on a signed data type.
  */
 static inline
-int coap_time_le(coap_tick_t a, coap_tick_t b) {
-  return a == b || coap_time_lt(a,b);
+int coap_time_le(coap_tick_t a, coap_tick_t b)
+{
+    return a == b || coap_time_lt(a, b);
 }
 
 /** @} */

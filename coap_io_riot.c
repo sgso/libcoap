@@ -12,16 +12,19 @@
 
 
 static inline struct coap_endpoint_t *
-coap_malloc_posix_endpoint(void) {
-  return (struct coap_endpoint_t *)coap_malloc(sizeof(struct coap_endpoint_t));
+coap_malloc_posix_endpoint(void)
+{
+    return (struct coap_endpoint_t *)coap_malloc(sizeof(struct coap_endpoint_t));
 }
 
 static inline void
-coap_free_posix_endpoint(struct coap_endpoint_t *ep) {
-  coap_free(ep);
+coap_free_posix_endpoint(struct coap_endpoint_t *ep)
+{
+    coap_free(ep);
 }
 
-coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags) {
+coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags)
+{
     coap_endpoint_t *ep;
     ep = coap_malloc_posix_endpoint();
 
@@ -37,10 +40,11 @@ coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags) {
     return ep;
 }
 
-void coap_free_endpoint(coap_endpoint_t *ep) {
-  if(ep) {
-      coap_free_posix_endpoint((struct coap_endpoint_t *)ep);
-  }
+void coap_free_endpoint(coap_endpoint_t *ep)
+{
+    if (ep) {
+        coap_free_posix_endpoint((struct coap_endpoint_t *)ep);
+    }
 }
 
 #ifdef __GNUC__
@@ -65,7 +69,7 @@ ssize_t coap_network_send(struct coap_context_t *context,
         ng_netreg_hdr_build(NG_NETTYPE_UDP, pdu_snip,
                             (uint8_t *)&local_interface->addr.port, sizeof(uint16_t),
                             (uint8_t *)&dst->port, sizeof(uint16_t));
-    
+
     ng_pktsnip_t *ipv6_snip =
         ng_netreg_hdr_build(NG_NETTYPE_IPV6, udp_snip,
                             (uint8_t *)&local_interface->addr.addr, sizeof(ng_ipv6_addr_t),
@@ -104,17 +108,21 @@ ssize_t coap_network_send(struct coap_context_t *context,
 /*     return packet; */
 /* } */
 
-void coap_free_packet(coap_packet_t *packet) {
+void coap_free_packet(coap_packet_t *packet)
+{
     /* checks for NULL itself */
     ng_pktbuf_release(packet);
 }
 
-static inline size_t coap_get_max_packetlength(const coap_packet_t *packet UNUSED_PARAM) {
-  return COAP_MAX_PDU_SIZE;
+static inline size_t coap_get_max_packetlength(const coap_packet_t *packet UNUSED_PARAM)
+{
+    return COAP_MAX_PDU_SIZE;
 }
 
 /* Not needed on RIOT */
-ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet) {
-    (void)ep; (void)packet;
+ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet)
+{
+    (void)ep;
+    (void)packet;
     return 0;
 }

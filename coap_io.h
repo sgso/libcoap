@@ -3,7 +3,7 @@
  * Copyright (C) 2012--2013 Olaf Bergmann <bergmann@tzi.org>
  *
  * This file is part of the CoAP library libcoap. Please see
- * README for terms of use. 
+ * README for terms of use.
  */
 
 #ifndef _COAP_IO_H_
@@ -59,13 +59,13 @@ void coap_free_endpoint(coap_endpoint_t *ep);
  * @param dst     The address of the receiver.
  * @param data    The data to send.
  * @param datalen The actual length of @p data.
- * @return The number of bytes written on success, or a value less than zero 
+ * @return The number of bytes written on success, or a value less than zero
  *        on error.
  */
 ssize_t coap_network_send(struct coap_context_t *context,
-			  const coap_endpoint_t *local_interface,
-			  const coap_address_t *dst,
-			  coap_pdu_t *pdu);
+                          const coap_endpoint_t *local_interface,
+                          const coap_address_t *dst,
+                          coap_pdu_t *pdu);
 /**
  * Function interface for reading data. This function returns the number
  * of bytes that have been read, or a value less than zero on error. In
@@ -76,7 +76,7 @@ ssize_t coap_network_send(struct coap_context_t *context,
  *               packet structure is stored. The caller must call
  *               coap_free_packet to release the storage used by this
  *               packet.
- * @return The number of bytes received on success, or a value less than zero 
+ * @return The number of bytes received on success, or a value less than zero
  *        on error.
  */
 ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet);

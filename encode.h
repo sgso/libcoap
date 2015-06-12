@@ -3,7 +3,7 @@
  * Copyright (C) 2010--2012 Olaf Bergmann <bergmann@tzi.org>
  *
  * This file is part of the CoAP library libcoap. Please see
- * README for terms of use. 
+ * README for terms of use.
  */
 
 #ifndef _COAP_ENCODE_H_
@@ -33,7 +33,7 @@ extern int coap_fls(unsigned int i);
  * Decodes multiple-length byte sequences. buf points to an input byte
  * sequence of length len. Returns the decoded value.
  */
-unsigned int coap_decode_var_bytes(unsigned char *buf,unsigned int len);
+unsigned int coap_decode_var_bytes(unsigned char *buf, unsigned int len);
 
 /**
  * Encodes multiple-length byte sequences. buf points to an output

@@ -3,7 +3,7 @@
  * Copyright (C) 2010,2011,2014 Olaf Bergmann <bergmann@tzi.org>
  *
  * This file is part of the CoAP library libcoap. Please see
- * README for terms of use. 
+ * README for terms of use.
  */
 
 #ifndef _COAP_MEM_H_
@@ -25,8 +25,8 @@ void coap_memory_init(void);
  * to facilitate arrays of type objects to be used instead of dynamic
  * memory management on constrained devices.
  */
-typedef enum { 
-  COAP_STRING, COAP_ATTRIBUTE_NAME, COAP_ATTRIBUTE_VALUE 
+typedef enum {
+    COAP_STRING, COAP_ATTRIBUTE_NAME, COAP_ATTRIBUTE_VALUE
 } coap_memory_tag_t;
 
 /**
@@ -56,15 +56,17 @@ void coap_free_type(coap_memory_tag_t type, void *p);
 /**
  * Wrapper function to coap_malloc_type() for backwards compatibility.
  */
-static inline void *coap_malloc(size_t size) {
-  return coap_malloc_type(COAP_STRING, size);
+static inline void *coap_malloc(size_t size)
+{
+    return coap_malloc_type(COAP_STRING, size);
 }
 
 /**
  * Wrapper function to coap_free_type() for backwards compatibility.
  */
-static inline void coap_free(void *object) {
-  coap_free_type(COAP_STRING, object);
+static inline void coap_free(void *object)
+{
+    coap_free_type(COAP_STRING, object);
 }
 
 #endif /* _COAP_MEM_H_ */
