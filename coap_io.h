@@ -11,14 +11,7 @@
 
 #include "config.h"
 
-#ifdef HAVE_ASSERT_H
 #include <assert.h>
-#else
-#ifndef assert
-#warning "assertions are disabled"
-#  define assert(x)
-#endif
-#endif
 
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>

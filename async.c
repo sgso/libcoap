@@ -21,9 +21,8 @@
 #include "debug.h"
 #include "async.h"
 
-coap_async_state_t *
-coap_register_async(coap_context_t *context, coap_address_t *peer,
-                    coap_pdu_t *request, unsigned char flags, void *data)
+coap_async_state_t *coap_register_async(coap_context_t *context, coap_address_t *peer,
+                                        coap_pdu_t *request, unsigned char flags, void *data)
 {
     coap_async_state_t *s;
     coap_tid_t id;
@@ -74,16 +73,14 @@ coap_register_async(coap_context_t *context, coap_address_t *peer,
     return s;
 }
 
-coap_async_state_t *
-coap_find_async(coap_context_t *context, coap_tid_t id)
+coap_async_state_t *coap_find_async(coap_context_t *context, coap_tid_t id)
 {
     coap_async_state_t *tmp;
     LL_SEARCH_SCALAR(context->async_state, tmp, id, id);
     return tmp;
 }
 
-int
-coap_remove_async(coap_context_t *context, coap_tid_t id,
+int coap_remove_async(coap_context_t *context, coap_tid_t id,
                   coap_async_state_t **s)
 {
     coap_async_state_t *tmp = coap_find_async(context, id);
@@ -96,8 +93,7 @@ coap_remove_async(coap_context_t *context, coap_tid_t id,
     return tmp != NULL;
 }
 
-void
-coap_free_async(coap_async_state_t *s)
+void coap_free_async(coap_async_state_t *s)
 {
     if (s && (s->flags & COAP_ASYNC_RELEASE_DATA) != 0) {
         coap_free(s->appdata);

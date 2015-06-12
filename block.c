@@ -18,8 +18,7 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
 #ifndef WITHOUT_BLOCK
-unsigned int
-coap_opt_block_num(const coap_opt_t *block_opt)
+unsigned int coap_opt_block_num(const coap_opt_t *block_opt)
 {
     unsigned int num = 0;
     unsigned short len;
@@ -38,8 +37,7 @@ coap_opt_block_num(const coap_opt_t *block_opt)
     return (num << 4) | ((*COAP_OPT_BLOCK_LAST(block_opt) & 0xF0) >> 4);
 }
 
-int
-coap_get_block(coap_pdu_t *pdu, unsigned short type, coap_block_t *block)
+int coap_get_block(coap_pdu_t *pdu, unsigned short type, coap_block_t *block)
 {
     coap_opt_iterator_t opt_iter;
     coap_opt_t *option;
@@ -61,8 +59,7 @@ coap_get_block(coap_pdu_t *pdu, unsigned short type, coap_block_t *block)
     return 0;
 }
 
-int
-coap_write_block_opt(coap_block_t *block, unsigned short type,
+int coap_write_block_opt(coap_block_t *block, unsigned short type,
                      coap_pdu_t *pdu, size_t data_length)
 {
     size_t start, want, avail;
@@ -121,8 +118,7 @@ coap_write_block_opt(coap_block_t *block, unsigned short type,
     return 1;
 }
 
-int
-coap_add_block(coap_pdu_t *pdu, unsigned int len, const unsigned char *data,
+int coap_add_block(coap_pdu_t *pdu, unsigned int len, const unsigned char *data,
                unsigned int block_num, unsigned char block_szx)
 {
     size_t start;
