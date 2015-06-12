@@ -152,7 +152,7 @@ coap_context_t *coap_new_context(const coap_address_t *listen_addr);
 static inline unsigned short coap_new_message_id(coap_context_t *context)
 {
     context->message_id++;
-    return htons(context->message_id);
+    return HTONS(context->message_id);
 }
 
 /* CoAP stack context must be released with coap_free_context(). This

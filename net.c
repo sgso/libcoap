@@ -486,7 +486,7 @@ coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node)
         coap_insert_node(&context->sendqueue, node);
 
         debug("** retransmission #%d of transaction %d\n",
-              node->retransmit_cnt, ntohs(node->pdu->hdr->id));
+              node->retransmit_cnt, NTOHS(node->pdu->hdr->id));
 
         node->id = coap_send_impl(context, &node->local_if,
                                   &node->remote, node->pdu);
@@ -495,7 +495,7 @@ coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node)
 
     /* no more retransmissions, remove node from system */
 
-    debug("** removed transaction %d\n", ntohs(node->id));
+    debug("** removed transaction %d\n", NTOHS(node->id));
 
 #ifndef WITHOUT_OBSERVE
     /* Check if subscriptions exist that should be canceled after
@@ -584,8 +584,8 @@ int coap_handle_message(coap_context_t *ctx,
         memcpy(&dst.addr.u8, &((ng_ipv6_hdr_t *)ipv6_snip->data)->dst, sizeof(ng_ipv6_addr_t));
         memcpy(&src.port, &((ng_udp_hdr_t *)udp_snip->data)->src_port, sizeof(network_uint16_t));
         memcpy(&dst.port, &((ng_udp_hdr_t *)udp_snip->data)->dst_port, sizeof(network_uint16_t));
-        dst.port = ntohs(dst.port);
-        src.port = ntohs(src.port);
+        dst.port = NTOHS(dst.port);
+        src.port = NTOHS(src.port);
         memcpy(&if_pid,   &((ng_netif_hdr_t *)netif_snip->data)->if_pid, sizeof(kernel_pid_t));
         memcpy(&if_flags, &((ng_netif_hdr_t *)netif_snip->data)->flags, sizeof(uint8_t));
 
@@ -756,7 +756,7 @@ void coap_cancel_all_messages(coap_context_t *context, const coap_address_t *dst
                        context->sendqueue->pdu->hdr->token_length)) {
         q = context->sendqueue;
         context->sendqueue = q->next;
-        debug("**** removed transaction %d\n", ntohs(q->pdu->hdr->id));
+        debug("**** removed transaction %d\n", NTOHS(q->pdu->hdr->id));
         coap_delete_node(q);
     }
 
@@ -773,7 +773,7 @@ void coap_cancel_all_messages(coap_context_t *context, const coap_address_t *dst
             token_match(token, token_length,
                         q->pdu->hdr->token, q->pdu->hdr->token_length)) {
             p->next = q->next;
-            debug("**** removed transaction %d\n", ntohs(q->pdu->hdr->id));
+            debug("**** removed transaction %d\n", NTOHS(q->pdu->hdr->id));
             coap_delete_node(q);
             q = p->next;
         }
@@ -1330,7 +1330,7 @@ void coap_dispatch(coap_context_t *context, coap_queue_t *rcvd)
                  * not only the transaction but also the subscriptions we might
                  * have. */
 
-                coap_log(LOG_ALERT, "got RST for message %u\n", ntohs(rcvd->pdu->hdr->id));
+                coap_log(LOG_ALERT, "got RST for message %u\n", NTOHS(rcvd->pdu->hdr->id));
 
                 /* find transaction in sendqueue to stop retransmission */
                 coap_remove_from_queue(&context->sendqueue, rcvd->id, &sent);

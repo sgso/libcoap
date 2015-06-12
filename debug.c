@@ -79,7 +79,7 @@ void coap_show_pdu(const coap_pdu_t *pdu)
     fprintf(COAP_DEBUG_FD, "v:%d t:%d tkl:%d c:%d id:%u",
             pdu->hdr->version, pdu->hdr->type,
             pdu->hdr->token_length,
-            pdu->hdr->code, ntohs(pdu->hdr->id));
+            pdu->hdr->code, NTOHS(pdu->hdr->id));
 
     /* show options, if any */
     coap_option_iterator_init((coap_pdu_t *)pdu, &opt_iter, COAP_OPT_ALL);

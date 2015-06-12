@@ -56,7 +56,7 @@ coap_pdu_t *coap_new_pdu(void)
 {
     coap_pdu_t *pdu;
 
-    pdu = coap_pdu_init(0, 0, ntohs(COAP_INVALID_TID), COAP_MAX_PDU_SIZE);
+    pdu = coap_pdu_init(0, 0, NTOHS(COAP_INVALID_TID), COAP_MAX_PDU_SIZE);
 
 #ifndef NDEBUG
 

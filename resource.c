@@ -751,27 +751,12 @@ static void coap_remove_failed_observers(coap_context_t *context,
                 list_remove(resource->subscribers, obs);
                 obs->fail_cnt = 0;
 
-#ifndef NDEBUG
-
-                if (LOG_DEBUG <= coap_get_log_level()) {
-#ifndef INET6_ADDRSTRLEN
-#define INET6_ADDRSTRLEN 40
-#endif
-                    unsigned char addr[INET6_ADDRSTRLEN + 8];
-
-                    if (coap_print_addr((const struct coap_address_t *)&obs->subscriber, addr, INET6_ADDRSTRLEN + 8)) {
-                        debug("** removed observer %s\n", addr);
-                    }
-                }
-
-#endif
                 coap_cancel_all_messages(context, &obs->subscriber,
                                          obs->token, obs->token_length);
 
                 COAP_FREE_TYPE(subscription, obs);
             }
         }
-
         break;                  /* break loop if observer was found */
     }
 }
