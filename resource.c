@@ -49,21 +49,21 @@ void *coap_iterator_next(coap_iterator_t *ri)
  * Adds Char to Buf if Offset is zero. Otherwise, Char is not written
  * and Offset is decremented.
  */
-#define PRINT_WITH_OFFSET(Buf,Offset,Char)		\
-  if ((Offset) == 0) {					\
-    (*(Buf)++) = (Char);				\
-  } else {						\
-    (Offset)--;						\
-  }							\
+#define PRINT_WITH_OFFSET(Buf,Offset,Char)              \
+  if ((Offset) == 0) {                                  \
+    (*(Buf)++) = (Char);                                \
+  } else {                                              \
+    (Offset)--;                                         \
+  }                                                     \
 
 /**
  * Adds Char to Buf if Offset is zero and Buf is less than Bufend.
  */
-#define PRINT_COND_WITH_OFFSET(Buf,Bufend,Offset,Char,Result) {		\
-    if ((Buf) < (Bufend)) {						\
-      PRINT_WITH_OFFSET(Buf,Offset,Char);				\
-    }									\
-    (Result)++;								\
+#define PRINT_COND_WITH_OFFSET(Buf,Bufend,Offset,Char,Result) {         \
+    if ((Buf) < (Bufend)) {                                             \
+      PRINT_WITH_OFFSET(Buf,Offset,Char);                               \
+    }                                                                   \
+    (Result)++;                                                         \
   }
 
 /**
@@ -71,11 +71,11 @@ void *coap_iterator_next(coap_iterator_t *ri)
  * characters are skipped. Output may be truncated to Bufend - Buf
  * characters.
  */
-#define COPY_COND_WITH_OFFSET(Buf,Bufend,Offset,Str,Length,Result) {	\
-    size_t i;								\
-    for (i = 0; i < (Length); i++) {					\
+#define COPY_COND_WITH_OFFSET(Buf,Bufend,Offset,Str,Length,Result) {    \
+    size_t i;                                                           \
+    for (i = 0; i < (Length); i++) {                                    \
       PRINT_COND_WITH_OFFSET((Buf), (Bufend), (Offset), (Str)[i], (Result)); \
-    }									\
+    }                                                                   \
   }
 
 int match(const str *text, const str *pattern, int match_prefix, int match_substring)
@@ -238,12 +238,12 @@ print_wellknown(coap_context_t *context, unsigned char *buf, size_t *buflen,
 
         if (resource_param.length) { /* there is a query filter */
 
-            if (flags & MATCH_URI) {	/* match resource URI */
+            if (flags & MATCH_URI) {    /* match resource URI */
                 if (!match(&r->uri, &query_pattern, (flags & MATCH_PREFIX) != 0, (flags & MATCH_SUBSTRING) != 0)) {
                     continue;
                 }
             }
-            else {			/* match attribute */
+            else {                      /* match attribute */
                 coap_attr_t *attr;
                 str unquoted_val;
                 attr = coap_find_attr(r, resource_param.s, resource_param.length);
@@ -270,7 +270,7 @@ print_wellknown(coap_context_t *context, unsigned char *buf, size_t *buflen,
 
 #endif /* WITHOUT_QUERY_FILTER */
 
-        if (!subsequent_resource) {	/* this is the first resource  */
+        if (!subsequent_resource) {     /* this is the first resource  */
             subsequent_resource = 1;
         }
         else {
@@ -629,8 +629,8 @@ static void coap_notify_observers(coap_context_t *context, coap_resource_t *r)
 
         /* retrieve GET handler, prepare response */
         h = r->handler[COAP_REQUEST_GET - 1];
-        assert(h);		/* we do not allow subscriptions if no
-			 * GET handler is defined */
+        assert(h);              /* we do not allow subscriptions if no
+                         * GET handler is defined */
 
         for (obs = list_head(r->subscribers); obs; obs = list_item_next(obs)) {
             if (r->dirty == 0 && obs->dirty == 0)
@@ -772,7 +772,7 @@ static void coap_remove_failed_observers(coap_context_t *context,
             }
         }
 
-        break;			/* break loop if observer was found */
+        break;                  /* break loop if observer was found */
     }
 }
 

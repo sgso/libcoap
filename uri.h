@@ -8,10 +8,10 @@
  * string with coap_split_uri() and can be used as input for
  * option-creation functions. */
 typedef struct {
-    str host;			/**< host part of the URI */
-    unsigned short port;	/**< The port in host byte order */
-    str path;			/**< Beginning of the first path segment. */
-    str query;			/**<  The query part if present */
+    str host;                   /**< host part of the URI */
+    unsigned short port;        /**< The port in host byte order */
+    str path;                   /**< Beginning of the first path segment. */
+    str query;                  /**<  The query part if present */
 } coap_uri_t;
 
 /**
@@ -67,12 +67,12 @@ int coap_hash_path(const unsigned char *path, size_t len, coap_key_t key);
  * @endcode
  */
 typedef struct {
-    size_t n;			/**< number of remaining characters in buffer */
-    unsigned char separator;	/**< segment separators */
-    unsigned char *delim; 	/**< delimiters where to split the string */
-    size_t dlen;			/**< length of separator */
-    unsigned char *pos;		/**< current position in buffer */
-    size_t segment_length;	/**< length of current segment */
+    size_t n;                   /**< number of remaining characters in buffer */
+    unsigned char separator;    /**< segment separators */
+    unsigned char *delim;       /**< delimiters where to split the string */
+    size_t dlen;                        /**< length of separator */
+    unsigned char *pos;         /**< current position in buffer */
+    size_t segment_length;      /**< length of current segment */
 } coap_parse_iterator_t;
 
 /**

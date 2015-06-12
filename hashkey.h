@@ -40,10 +40,10 @@ void coap_hash_impl(const unsigned char *s, unsigned int len, coap_key_t h);
  *
  * @hideinitializer
  */
-#define coap_str_hash(Str,H) {			\
-    assert(Str);				\
-    memset((H), 0, sizeof(coap_key_t));		\
-    coap_hash((Str)->s, (Str)->length, (H));	\
+#define coap_str_hash(Str,H) {                  \
+    assert(Str);                                \
+    memset((H), 0, sizeof(coap_key_t));         \
+    coap_hash((Str)->s, (Str)->length, (H));    \
   }
 
 #endif /* COAP_HASHKEY_H_ */
