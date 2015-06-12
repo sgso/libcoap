@@ -1,36 +1,22 @@
-/* resource.h -- generic resource handling
- *
- * Copyright (C) 2010,2011,2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-/**
- * @file resource.h
- * @brief generic resource handling
- */
-
-#ifndef _COAP_RESOURCE_H_
-#define _COAP_RESOURCE_H_
+#ifndef COAP_RESOURCE_H_
+#define COAP_RESOURCE_H_
 
 #include "config.h"
 #include "t_list.h"
 
-#if defined(HAVE_ASSERT_H) && !defined(assert)
-# include <assert.h>
-#endif
+#include <assert.h>
 
 #ifndef COAP_RESOURCE_CHECK_TIME
 /** The interval in seconds to check if resources have changed. */
 #define COAP_RESOURCE_CHECK_TIME 2
 #endif /* COAP_RESOURCE_CHECK_TIME */
 
-#  ifdef COAP_RESOURCES_NOHASH
-#    include "utlist.h"
-#  else
-#    include "uthash.h"
-#  endif
+#ifdef COAP_RESOURCES_NOHASH
+#include "utlist.h"
+#else
+#include "uthash.h"
+#endif
+
 #include "hashkey.h"
 #include "async.h"
 #include "str.h"
@@ -39,13 +25,14 @@
 #include "subscribe.h"
 
 /** Definition of message handler function (@sa coap_resource_t). */
-typedef void (*coap_method_handler_t)
-(coap_context_t *, struct coap_resource_t *, const coap_endpoint_t *, coap_address_t *,
- coap_pdu_t *,
- str * /* token */, coap_pdu_t * /* response */);
+typedef void (*coap_method_handler_t)(coap_context_t *, struct coap_resource_t *,
+                                      const coap_endpoint_t *, coap_address_t *,
+                                      coap_pdu_t *,
+                                      str * /* token */,
+                                      coap_pdu_t * /* response */);
 
-#define COAP_ATTR_FLAGS_RELEASE_NAME  0x1
-#define COAP_ATTR_FLAGS_RELEASE_VALUE 0x2
+#define COAP_ATTR_FLAGS_RELEASE_NAME   (0x1)
+#define COAP_ATTR_FLAGS_RELEASE_VALUE  (0x2)
 
 typedef struct coap_attr_t {
     struct coap_attr_t *next;
@@ -54,14 +41,15 @@ typedef struct coap_attr_t {
     int flags;
 } coap_attr_t;
 
-#define COAP_RESOURCE_FLAGS_RELEASE_URI 0x1
+#define COAP_RESOURCE_FLAGS_RELEASE_URI (0x1)
 
 typedef struct coap_resource_t {
-    unsigned int dirty: 1;	     /**< set to 1 if resource has changed */
-unsigned int partiallydirty:
-    1; /**< set to 1 if some subscribers have not yet been notified of the last change */
-    unsigned int observable: 1; /**< can be observed */
-    unsigned int cacheable: 1;  /**< can be cached */
+    unsigned int dirty: 1;           /**< set to 1 if resource has changed */
+    unsigned int partiallydirty: 1;  /**< set to 1 if some subscribers
+                                      * have not yet been notified of
+                                      * the last change */
+    unsigned int observable: 1;      /**< can be observed */
+    unsigned int cacheable: 1;       /**< can be cached */
 
     /**
      * Used to store handlers for the four coap methods @c GET, @c POST,
@@ -71,7 +59,7 @@ unsigned int partiallydirty:
      */
     coap_method_handler_t handler[4];
 
-    coap_key_t key;	/**< the actual key bytes for this resource */
+    coap_key_t key;                  /**< thef actual key bytes for this resource */
 
 #ifdef COAP_RESOURCES_NOHASH
     struct coap_resource_t *next;
@@ -79,8 +67,8 @@ unsigned int partiallydirty:
     UT_hash_handle hh;
 #endif
 
-    coap_attr_t *link_attr; /**< attributes to be included with the link format */
-    LIST_STRUCT(subscribers); /**< list of observers for this resource */
+    coap_attr_t *link_attr;          /**< attributes to be included with the link format */
+    LIST_STRUCT(subscribers);        /**< list of observers for this resource */
 
 
     /**
@@ -216,13 +204,15 @@ coap_print_status_t coap_print_link(const coap_resource_t *resource,
  * @param method   The CoAP request method to handle.
  * @param handler  The handler to register with @p resource.
  */
-static inline void
-coap_register_handler(coap_resource_t *resource,
-                      unsigned char method, coap_method_handler_t handler)
+static inline void coap_register_handler(coap_resource_t *resource,
+                                         unsigned char method,
+                                         coap_method_handler_t handler)
 {
     assert(resource);
     assert(method > 0
-           && (size_t)(method - 1) < sizeof(resource->handler) / sizeof(coap_method_handler_t));
+           && (size_t)(method - 1) < sizeof(resource->handler)
+           / sizeof(coap_method_handler_t));
+
     resource->handler[method - 1] = handler;
 }
 
@@ -236,7 +226,7 @@ coap_register_handler(coap_resource_t *resource,
  * @return A pointer to the resource or @c NULL if not found.
  */
 coap_resource_t *coap_get_resource_from_key(coap_context_t *context,
-        coap_key_t key);
+                                            coap_key_t key);
 
 /**
  * Calculates the hash key for the resource requested by the
@@ -320,14 +310,13 @@ void coap_check_notify(coap_context_t *context);
 /** @} */
 
 typedef struct coap_iterator_t {
-    void *data;			/**< opaque iterator state */
-    unsigned int pos;		/**< current item number */
+    void *data;                 /**< opaque iterator state */
+    unsigned int pos;           /**< current item number */
 } coap_iterator_t ;
 
-coap_iterator_t *
-coap_resource_iterator_init(coap_resource_t *resources,
-                            coap_iterator_t *ri);
+coap_iterator_t *coap_resource_iterator_init(coap_resource_t *resources,
+                                             coap_iterator_t *ri);
 
 coap_resource_t *coap_resource_next(coap_iterator_t *ri);
 
-#endif /* _COAP_RESOURCE_H_ */
+#endif /* COAP_RESOURCE_H_ */

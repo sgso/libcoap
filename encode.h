@@ -1,20 +1,12 @@
-/* encode.h -- encoding and decoding of CoAP data types
- *
- * Copyright (C) 2010--2012 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
+#ifndef COAP_ENCODE_H_
+#define COAP_ENCODE_H_
 
-#ifndef _COAP_ENCODE_H_
-#define _COAP_ENCODE_H_
-
-#define Nn 8  /* duplicate definition of N if built on sky motes */
-#define E 4
-#define HIBIT (1 << (Nn - 1))
-#define EMASK ((1 << E) - 1)
-#define MMASK ((1 << Nn) - 1 - EMASK)
-#define MAX_VALUE ( (1 << Nn) - (1 << E) ) * (1 << ((1 << E) - 1))
+#define Nn           (8)  /* duplicate definition of N if built on sky motes */
+#define E            (4)
+#define HIBIT        (1 << (Nn - 1))
+#define EMASK        ((1 << E) - 1)
+#define MMASK        ((1 << Nn) - 1 - EMASK)
+#define MAX_VALUE    ((1 << Nn) - (1 << E)) * (1 << ((1 << E) - 1))
 
 #define COAP_PSEUDOFP_DECODE_8_4(r) (r < HIBIT ? r : (r & MMASK) << (r & EMASK))
 
@@ -43,4 +35,4 @@ unsigned int coap_decode_var_bytes(unsigned char *buf, unsigned int len);
  */
 unsigned int coap_encode_var_bytes(unsigned char *buf, unsigned int val);
 
-#endif /* _COAP_ENCODE_H_ */
+#endif /* COAP_ENCODE_H_ */

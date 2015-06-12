@@ -1,13 +1,5 @@
-/* coap_io.h -- Default network I/O functions for libcoap
- *
- * Copyright (C) 2012--2013 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-#ifndef _COAP_IO_H_
-#define _COAP_IO_H_
+#ifndef COAP_IO_H_
+#define COAP_IO_H_
 
 #include "config.h"
 
@@ -18,12 +10,14 @@
 #endif
 
 #include "address.h"
+#include "kernel.h"
+#include "net/ng_pktbuf.h"
+#include "pdu.h"
 
 struct coap_context_t;
 
-#include "kernel.h"
-#include "net/ng_pktbuf.h"
 typedef kernel_pid_t coap_if_handle_t;
+
 /**
  *   On RIOT we use the native ng_pktsnip_t because it has all of the
  *   below information in it and is already allocated.
@@ -37,8 +31,8 @@ typedef struct coap_endpoint_t {
     uint8_t flags;              /**< flags as defined in netif/hdr.h */
 } coap_endpoint_t;
 
-#define COAP_ENDPOINT_NOSEC 0x00
-#define COAP_ENDPOINT_DTLS  0x01
+#define COAP_ENDPOINT_NOSEC  (0x00)
+#define COAP_ENDPOINT_DTLS   (0x01)
 
 coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags);
 void coap_free_endpoint(coap_endpoint_t *ep);
@@ -75,10 +69,10 @@ ssize_t coap_network_send(struct coap_context_t *context,
 ssize_t coap_network_read(coap_endpoint_t *ep, coap_packet_t **packet);
 
 #ifndef coap_mcast_interface
-# define coap_mcast_interface(Local) 0
+#define coap_mcast_interface(Local) 0
 #endif
 
 /** Releases the storage allocated for @p packet */
 void coap_free_packet(coap_packet_t *packet);
 
-#endif /* _COAP_IO_H_ */
+#endif /* COAP_IO_H_ */

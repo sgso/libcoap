@@ -1,13 +1,5 @@
-/* net.h -- CoAP network interface
- *
- * Copyright (C) 2010--2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-#ifndef _COAP_NET_H_
-#define _COAP_NET_H_
+#ifndef COAP_NET_H_
+#define COAP_NET_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,16 +11,12 @@ extern "C" {
 
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
 #ifdef HAVE_TIME_H
 #include <time.h>
 #endif
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-
 
 #include "option.h"
 #include "coap_io.h"
@@ -41,15 +29,14 @@ struct coap_queue_t;
 typedef struct coap_queue_t {
     struct coap_queue_t *next;
 
-    coap_tick_t t;	        /**< when to send PDU for the next time */
-    unsigned char retransmit_cnt;	/**< retransmission counter, will be removed when zero */
-    unsigned int timeout;		/**< the randomized timeout value */
-
-    coap_endpoint_t local_if;	/**< the local address interface */
-    coap_address_t remote;	/**< remote address */
-    coap_tid_t id;		/**< unique transaction id */
-
-    coap_pdu_t *pdu;		/**< the CoAP PDU to send */
+    coap_tick_t t;                 /**< when to send PDU for the next time */
+    unsigned char retransmit_cnt;  /**< retransmission counter,
+                                        will be removed when zero */
+    unsigned int timeout;          /**< the randomized timeout value */
+    coap_endpoint_t local_if;      /**< the local address interface */
+    coap_address_t remote;         /**< remote address */
+    coap_tid_t id;                 /**< unique transaction id */
+    coap_pdu_t *pdu;               /**< the CoAP PDU to send */
 } coap_queue_t;
 
 /** Adds node to given queue, ordered by node->t. */
@@ -66,11 +53,9 @@ coap_queue_t *coap_new_node(void);
 
 struct coap_resource_t;
 struct coap_context_t;
-#ifndef WITHOUT_ASYNC
 struct coap_async_state_t;
-#endif
 
-/** Message handler that is used as call-back in coap_context_t */
+/** Message handler that is used as callback in coap_context_t */
 typedef void (*coap_response_handler_t)(struct coap_context_t *,
                                         const coap_endpoint_t *local_interface,
                                         const coap_address_t *remote,
@@ -94,12 +79,13 @@ typedef struct coap_context_t {
     /** list of asynchronous transactions */
     struct coap_async_state_t *async_state;
 #endif /* WITHOUT_ASYNC */
+
     /**
      * The time stamp in the first element of the sendqeue is relative
      * to sendqueue_basetime. */
     coap_tick_t sendqueue_basetime;
     coap_queue_t *sendqueue;
-    coap_endpoint_t *endpoint;	/**< the endpoint used for listening  */
+    coap_endpoint_t *endpoint;  /**< the endpoint used for listening  */
 
     /**
      * The last message id that was used is stored in this field.  The
@@ -125,9 +111,8 @@ typedef struct coap_context_t {
  * @param context The context to register the handler for.
  * @param handler The response handler to register.
  */
-static inline void
-coap_register_response_handler(coap_context_t *context,
-                               coap_response_handler_t handler)
+static inline void coap_register_response_handler(coap_context_t *context,
+                                                  coap_response_handler_t handler)
 {
     context->response_handler = handler;
 }
@@ -139,12 +124,10 @@ coap_register_response_handler(coap_context_t *context,
  * @param ctx  The context to use.
  * @param type The option type to register.
  */
-inline static void
-coap_register_option(coap_context_t *ctx, unsigned char type)
+inline static void coap_register_option(coap_context_t *ctx, unsigned char type)
 {
     coap_option_setb(ctx->known_options, type);
 }
-
 
 /**
  * Set sendqueue_basetime in the given context object @p ctx to @p
@@ -170,8 +153,7 @@ coap_context_t *coap_new_context(const coap_address_t *listen_addr);
  * @param context the current coap_context_t object
  * @return incremented message id in network byte order
  */
-static inline unsigned short
-coap_new_message_id(coap_context_t *context)
+static inline unsigned short coap_new_message_id(coap_context_t *context)
 {
     context->message_id++;
     return htons(context->message_id);
@@ -184,7 +166,6 @@ coap_new_message_id(coap_context_t *context)
  *
  */
 void coap_free_context(coap_context_t *context);
-
 
 /**
  * Sends a confirmed CoAP message to given destination. The memory
@@ -271,12 +252,11 @@ coap_tid_t coap_send_error(coap_context_t *context,
  * @param type Which type to set
  * @return transaction id on success or @c COAP_INVALID_TID otherwise.
  */
-coap_tid_t
-coap_send_message_type(coap_context_t *context,
-                       const coap_endpoint_t *local_interface,
-                       const coap_address_t *dst,
-                       coap_pdu_t *request,
-                       unsigned char type);
+coap_tid_t coap_send_message_type(coap_context_t *context,
+                                  const coap_endpoint_t *local_interface,
+                                  const coap_address_t *dst,
+                                  coap_pdu_t *request,
+                                  unsigned char type);
 /**
  * Sends an ACK message with code @c 0 for the specified @p request to
  * @p dst. This function returns the corresponding transaction id if
@@ -306,11 +286,10 @@ coap_tid_t coap_send_ack(coap_context_t *context,
  * @return The transaction id if RST was sent or @c COAP_INVALID_TID
  * on error.
  */
-static inline coap_tid_t
-coap_send_rst(coap_context_t *context,
-              const coap_endpoint_t *local_interface,
-              const coap_address_t *dst,
-              coap_pdu_t *request)
+static inline coap_tid_t coap_send_rst(coap_context_t *context,
+                                       const coap_endpoint_t *local_interface,
+                                       const coap_address_t *dst,
+                                       coap_pdu_t *request)
 {
     return coap_send_message_type(context, local_interface,
                                   dst, request, COAP_MESSAGE_RST);
@@ -320,21 +299,11 @@ coap_send_rst(coap_context_t *context,
 coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node);
 
 /**
- * Reads data from the network and tries to parse as CoAP PDU. On success, 0 is returned
- * and a new node with the parsed PDU is added to the receive queue in the specified context
- * object.
+ * Reads data from the network and tries to parse as CoAP PDU. On
+ * success, 0 is returned and a new node with the parsed PDU is added
+ * to the receive queue in the specified context object.
  */
 int coap_read(coap_context_t *context);
-
-#ifdef WITH_SOCKET_BASE_TIMEOUT
-/**
- * Reads data from the network with timeout and tries to parse as CoAP
- * PDU. On success, 0 is returned and a new node with the parsed PDU
- * is added to the receive queue in the specified context object.
- */
-#include "vtimer.h"
-int coap_try_read(coap_context_t *ctx, timex_t *timeout);
-#endif  /* WITH_SOCKET_BASE_TIMEOUT */
 
 /**
  * Parses and interprets a CoAP message with context @p ctx. This function
@@ -395,8 +364,7 @@ int coap_remove_from_queue(coap_queue_t **queue,
  *
  * @return @c 1 if node was found, removed and destroyed, @c 0 otherwise.
  */
-inline static int
-coap_remove_transaction(coap_queue_t **queue, coap_tid_t id)
+inline static int coap_remove_transaction(coap_queue_t **queue, coap_tid_t id)
 {
     coap_queue_t *node;
 
@@ -433,7 +401,8 @@ void coap_cancel_all_messages(coap_context_t *context,
 /** Dispatches the PDUs from the receive queue in given context. */
 void coap_dispatch(coap_context_t *context, coap_queue_t *rcvd);
 
-/** Returns 1 if there are no messages to send or to dispatch in the context's queues. */
+/** Returns 1 if there are no messages to send or to dispatch in the
+ * context's queues. */
 int coap_can_exit(coap_context_t *context);
 
 /**
@@ -461,7 +430,7 @@ void coap_ticks(coap_tick_t *);
 
     while (coap_option_next(&opt_iter)) {
       if (opt_iter.type & 0x01) {
-	... handle unknown critical option in opt_iter ...
+        ... handle unknown critical option in opt_iter ...
       }
     }
   }
@@ -482,4 +451,4 @@ int coap_option_check_critical(coap_context_t *ctx,
 }
 #endif
 
-#endif /* _COAP_NET_H_ */
+#endif /* COAP_NET_H_ */

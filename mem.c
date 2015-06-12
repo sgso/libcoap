@@ -1,45 +1,22 @@
-/* mem.c -- CoAP memory handling
- *
- * Copyright (C) 2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-
 #include "config.h"
 #include "mem.h"
 #include "debug.h"
 
 #include <assert.h>
-
-#ifdef HAVE_MALLOC
 #include <stdlib.h>
 
-void
-coap_memory_init(void)
+void coap_memory_init(void)
 {
 }
 
-#ifdef __GNUC__
-#define UNUSED_PARAM __attribute__((unused))
-#else
-#define UNUSED_PARAM
-#endif /* __GNUC__ */
-
-void *
-coap_malloc_type(coap_memory_tag_t type UNUSED_PARAM, size_t size)
+void *coap_malloc_type(coap_memory_tag_t type, size_t size)
 {
+    (void)type;
     return malloc(size);
 }
 
-void
-coap_free_type(coap_memory_tag_t type UNUSED_PARAM, void *p)
+void coap_free_type(coap_memory_tag_t type, void *p)
 {
+    (void)type;
     free(p);
 }
-
-#else /* HAVE_MALLOC */
-
-
-#endif /* HAVE_MALLOC */

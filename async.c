@@ -1,11 +1,3 @@
-/* async.c -- state management for asynchronous messages
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 /**
  * @file async.c
  * @brief state management for asynchronous messages
@@ -15,11 +7,10 @@
 
 #include "config.h"
 
-#include "utlist.h"
-
-#include "mem.h"
-#include "debug.h"
 #include "async.h"
+#include "debug.h"
+#include "mem.h"
+#include "utlist.h"
 
 coap_async_state_t *coap_register_async(coap_context_t *context, coap_address_t *peer,
                                         coap_pdu_t *request, unsigned char flags, void *data)
@@ -81,7 +72,7 @@ coap_async_state_t *coap_find_async(coap_context_t *context, coap_tid_t id)
 }
 
 int coap_remove_async(coap_context_t *context, coap_tid_t id,
-                  coap_async_state_t **s)
+                      coap_async_state_t **s)
 {
     coap_async_state_t *tmp = coap_find_async(context, id);
 
@@ -103,5 +94,5 @@ void coap_free_async(coap_async_state_t *s)
 }
 
 #else
-void does_not_exist();	/* make some compilers happy */
+typedef int dont_be_pedantic;
 #endif /* WITHOUT_ASYNC */

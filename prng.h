@@ -1,18 +1,10 @@
-/* prng.h -- Pseudo Random Numbers
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 /**
  * @file prng.h
  * @brief Pseudo Random Numbers
  */
 
-#ifndef _COAP_PRNG_H_
-#define _COAP_PRNG_H_
+#ifndef COAP_PRNG_H_
+#define COAP_PRNG_H_
 
 #include "config.h"
 
@@ -28,8 +20,7 @@
  * implementation for prng().  You might want to change prng() to use
  * a better PRNG on your specific platform.
  */
-static inline int
-coap_prng_impl(unsigned char *buf, size_t len)
+static inline int coap_prng_impl(unsigned char *buf, size_t len)
 {
     while (len--) {
         *buf++ = rand() & 0xFF;
@@ -57,6 +48,4 @@ coap_prng_impl(unsigned char *buf, size_t len)
 #define prng_init(Value) srand((unsigned long)(Value))
 #endif
 
-/** @} */
-
-#endif /* _COAP_PRNG_H_ */
+#endif /* COAP_PRNG_H_ */

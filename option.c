@@ -1,27 +1,13 @@
-/*
- * option.c -- helpers for handling options in CoAP PDUs
- *
- * Copyright (C) 2010-2013 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-
 #include "config.h"
 
-#if defined(HAVE_ASSERT_H) && !defined(assert)
-# include <assert.h>
-#endif
-
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "option.h"
 #include "debug.h"
 
-coap_opt_t *
-options_start(coap_pdu_t *pdu)
+coap_opt_t *options_start(coap_pdu_t *pdu)
 {
 
     if (pdu && pdu->hdr &&
@@ -37,8 +23,7 @@ options_start(coap_pdu_t *pdu)
     }
 }
 
-size_t
-coap_opt_parse(const coap_opt_t *opt, size_t length, coap_option_t *result)
+size_t coap_opt_parse(const coap_opt_t *opt, size_t length, coap_option_t *result)
 {
 
     const coap_opt_t *opt_start = opt; /* store where parsing starts  */
@@ -46,12 +31,12 @@ coap_opt_parse(const coap_opt_t *opt, size_t length, coap_option_t *result)
     assert(opt);
     assert(result);
 
-#define ADVANCE_OPT(o,e,step) if ((e) < step) {			\
-    debug("cannot advance opt past end\n");			\
-    return 0;							\
-  } else {							\
-    (e) -= step;						\
-    (o) = ((unsigned char *)(o)) + step;			\
+#define ADVANCE_OPT(o,e,step) if ((e) < step) {                 \
+    debug("cannot advance opt past end\n");                     \
+    return 0;                                                   \
+  } else {                                                      \
+    (e) -= step;                                                \
+    (o) = ((unsigned char *)(o)) + step;                        \
   }
 
     if (length < 1) {
@@ -128,9 +113,8 @@ coap_opt_parse(const coap_opt_t *opt, size_t length, coap_option_t *result)
     return (opt + result->length) - opt_start;
 }
 
-coap_opt_iterator_t *
-coap_option_iterator_init(coap_pdu_t *pdu, coap_opt_iterator_t *oi,
-                          const coap_opt_filter_t filter)
+coap_opt_iterator_t *coap_option_iterator_init(coap_pdu_t *pdu, coap_opt_iterator_t *oi,
+                                               const coap_opt_filter_t filter)
 {
     assert(pdu);
     assert(pdu->hdr);
@@ -158,8 +142,7 @@ coap_option_iterator_init(coap_pdu_t *pdu, coap_opt_iterator_t *oi,
     return oi;
 }
 
-static inline int
-opt_finished(coap_opt_iterator_t *oi)
+static inline int opt_finished(coap_opt_iterator_t *oi)
 {
     assert(oi);
 
@@ -171,13 +154,12 @@ opt_finished(coap_opt_iterator_t *oi)
     return oi->bad;
 }
 
-coap_opt_t *
-coap_option_next(coap_opt_iterator_t *oi)
+coap_opt_t *coap_option_next(coap_opt_iterator_t *oi)
 {
     coap_option_t option;
     coap_opt_t *current_opt = NULL;
     size_t optsize;
-    int b;		   /* to store result of coap_option_getb() */
+    int b;                 /* to store result of coap_option_getb() */
 
     assert(oi);
 
@@ -203,7 +185,7 @@ coap_option_next(coap_opt_iterator_t *oi)
 
             oi->type += option.delta;
         }
-        else {			/* current option is malformed */
+        else {                  /* current option is malformed */
             oi->bad = 1;
             return NULL;
         }
@@ -217,7 +199,7 @@ coap_option_next(coap_opt_iterator_t *oi)
             (b = coap_option_getb(oi->filter, oi->type)) > 0) {
             break;
         }
-        else if (b < 0) {		/* filter too small, cannot proceed */
+        else if (b < 0) {               /* filter too small, cannot proceed */
             oi->bad = 1;
             return NULL;
         }
@@ -226,9 +208,8 @@ coap_option_next(coap_opt_iterator_t *oi)
     return current_opt;
 }
 
-coap_opt_t *
-coap_check_option(coap_pdu_t *pdu, unsigned char type,
-                  coap_opt_iterator_t *oi)
+coap_opt_t *coap_check_option(coap_pdu_t *pdu, unsigned char type,
+                              coap_opt_iterator_t *oi)
 {
     coap_opt_filter_t f;
 
@@ -240,8 +221,7 @@ coap_check_option(coap_pdu_t *pdu, unsigned char type,
     return coap_option_next(oi);
 }
 
-unsigned short
-coap_opt_delta(const coap_opt_t *opt)
+unsigned short coap_opt_delta(const coap_opt_t *opt)
 {
     unsigned short n;
 
@@ -273,8 +253,7 @@ coap_opt_delta(const coap_opt_t *opt)
     return n;
 }
 
-unsigned short
-coap_opt_length(const coap_opt_t *opt)
+unsigned short coap_opt_length(const coap_opt_t *opt)
 {
     unsigned short length;
 
@@ -317,8 +296,7 @@ coap_opt_length(const coap_opt_t *opt)
     return length;
 }
 
-unsigned char *
-coap_opt_value(coap_opt_t *opt)
+unsigned char *coap_opt_value(coap_opt_t *opt)
 {
     size_t ofs = 1;
 
@@ -359,8 +337,7 @@ coap_opt_value(coap_opt_t *opt)
     return (unsigned char *)opt + ofs;
 }
 
-size_t
-coap_opt_size(const coap_opt_t *opt)
+size_t coap_opt_size(const coap_opt_t *opt)
 {
     coap_option_t option;
 
@@ -368,15 +345,14 @@ coap_opt_size(const coap_opt_t *opt)
     return coap_opt_parse(opt, (size_t) - 1, &option);
 }
 
-size_t
-coap_opt_setheader(coap_opt_t *opt, size_t maxlen,
-                   unsigned short delta, size_t length)
+size_t coap_opt_setheader(coap_opt_t *opt, size_t maxlen,
+                          unsigned short delta, size_t length)
 {
     size_t skip = 0;
 
     assert(opt);
 
-    if (maxlen == 0) {	/* need at least one byte */
+    if (maxlen == 0) {  /* need at least one byte */
         return 0;
     }
 
@@ -429,9 +405,8 @@ coap_opt_setheader(coap_opt_t *opt, size_t maxlen,
     return skip + 1;
 }
 
-size_t
-coap_opt_encode(coap_opt_t *opt, size_t maxlen, unsigned short delta,
-                const unsigned char *val, size_t length)
+size_t coap_opt_encode(coap_opt_t *opt, size_t maxlen, unsigned short delta,
+                       const unsigned char *val, size_t length)
 {
     size_t l = 1;
 
@@ -451,10 +426,9 @@ coap_opt_encode(coap_opt_t *opt, size_t maxlen, unsigned short delta,
         return 0;
     }
 
-    if (val) {		/* better be safe here */
+    if (val) {          /* better be safe here */
         memcpy(opt, val, length);
     }
 
     return l + length;
 }
-

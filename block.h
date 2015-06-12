@@ -1,16 +1,8 @@
-/* block.h -- block transfer
- *
- * Copyright (C) 2010--2012,2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
+#ifndef COAP_BLOCK_H_
+#define COAP_BLOCK_H_
 
-#ifndef _COAP_BLOCK_H_
-#define _COAP_BLOCK_H_
-
-#include "option.h"
 #include "encode.h"
+#include "option.h"
 #include "pdu.h"
 
 /**
@@ -18,13 +10,13 @@
  * @{
  */
 
-#ifndef COAP_MAX_BLOCK_SZX
 /**
  * The largest value for the SZX component in a Block option. Note
  * that 1 << (COAP_MAX_BLOCK_SZX + 4) should not exceed
  * COAP_MAX_PDU_SIZE.
  */
-#define COAP_MAX_BLOCK_SZX      4
+#ifndef COAP_MAX_BLOCK_SZX
+#define COAP_MAX_BLOCK_SZX      (4)
 #endif /* COAP_MAX_BLOCK_SZX */
 
 #if (COAP_MAX_PDU_SIZE - 6) < (1 << (COAP_MAX_BLOCK_SZX + 4))
@@ -35,9 +27,9 @@
  * Structure of Block options.
  */
 typedef struct {
-    unsigned int num;	  /**< block number */
-    unsigned int m: 1;	 /**< 1 if more blocks follow, 0 otherwise */
-    unsigned int szx: 3;	 /**< block size */
+    unsigned int num;        /**< block number */
+    unsigned int m: 1;       /**< 1 if more blocks follow, 0 otherwise */
+    unsigned int szx: 3;     /**< block size */
 } coap_block_t;
 
 /**
@@ -66,15 +58,15 @@ unsigned int coap_opt_block_num(const coap_opt_t *block_opt);
  * Checks if more than @p num blocks are required to deliver @p data_len
  * bytes of data for a block size of 1 << (@p szx + 4).
  */
-static inline int
-coap_more_blocks(size_t data_len, unsigned int num, unsigned short szx)
+static inline int coap_more_blocks(size_t data_len,
+                                   unsigned int num,
+                                   unsigned short szx)
 {
     return ((num + 1) << (szx + 4)) < data_len;
 }
 
 /** Sets the More-bit in @p block_opt */
-static inline void
-coap_opt_block_set_m(coap_opt_t *block_opt, int m)
+static inline void coap_opt_block_set_m(coap_opt_t *block_opt, int m)
 {
     if (m) {
         *(COAP_OPT_VALUE(block_opt) + (COAP_OPT_LENGTH(block_opt) - 1)) |= 0x08;
@@ -138,4 +130,4 @@ int coap_add_block(coap_pdu_t *pdu, unsigned int len, const unsigned char *data,
                    unsigned int block_num, unsigned char block_szx);
 /**@}*/
 
-#endif /* _COAP_BLOCK_H_ */
+#endif /* COAP_BLOCK_H_ */

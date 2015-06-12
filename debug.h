@@ -1,15 +1,8 @@
-/* debug.h -- debug utilities
- *
- * Copyright (C) 2010,2011,2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-#ifndef _COAP_DEBUG_H_
-#define _COAP_DEBUG_H_
+#ifndef COAP_DEBUG_H_
+#define COAP_DEBUG_H_
 
 #include "config.h"
+#include "log.h"
 
 #ifndef COAP_DEBUG_FD
 #define COAP_DEBUG_FD stdout
@@ -19,23 +12,15 @@
 #define COAP_ERR_FD stderr
 #endif
 
-#ifdef HAVE_SYSLOG_H
-#include <syslog.h>
-typedef short coap_log_t;
-#else
-#include "log.h"
 #define LOG_EMERG       LOG_ERROR
 #define LOG_ALERT       LOG_ERROR
 #define LOG_CRIT        LOG_ERROR
 #define LOG_NOTICE      LOG_INFO
-#endif
 
 /** Returns the (static) log level. */
 #define coap_get_log_level()  LOG_LEVEL
 
-#ifndef coap_log
 #define coap_log(level, ...) LOG(level, __VA_ARGS__)
-#endif
 
 #ifndef NDEBUG
 
@@ -59,4 +44,4 @@ size_t coap_print_addr(const struct coap_address_t *, unsigned char *, size_t);
 
 #endif
 
-#endif /* _COAP_DEBUG_H_ */
+#endif /* COAP_DEBUG_H_ */

@@ -1,35 +1,19 @@
-/* pdu.c -- CoAP message structure
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
 
-#if defined(HAVE_ASSERT_H) && !defined(assert)
-# include <assert.h>
-#endif
-
-#include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
 
 #include "debug.h"
-#include "pdu.h"
-#include "option.h"
 #include "encode.h"
+#include "mem.h"
+#include "option.h"
+#include "pdu.h"
 
 #include "byteorder.h"
 
-#include "mem.h"
-
-void
-coap_pdu_clear(coap_pdu_t *pdu, size_t size)
+void coap_pdu_clear(coap_pdu_t *pdu, size_t size)
 {
     assert(pdu);
 
@@ -43,9 +27,8 @@ coap_pdu_clear(coap_pdu_t *pdu, size_t size)
 }
 
 
-coap_pdu_t *
-coap_pdu_init(unsigned char type, unsigned char code,
-              unsigned short id, size_t size)
+coap_pdu_t *coap_pdu_init(unsigned char type, unsigned char code,
+                          unsigned short id, size_t size)
 {
     coap_pdu_t *pdu;
 
@@ -69,8 +52,7 @@ coap_pdu_init(unsigned char type, unsigned char code,
     return pdu;
 }
 
-coap_pdu_t *
-coap_new_pdu(void)
+coap_pdu_t *coap_new_pdu(void)
 {
     coap_pdu_t *pdu;
 
@@ -86,14 +68,12 @@ coap_new_pdu(void)
     return pdu;
 }
 
-void
-coap_delete_pdu(coap_pdu_t *pdu)
+void coap_delete_pdu(coap_pdu_t *pdu)
 {
     coap_free(pdu);
 }
 
-int
-coap_add_token(coap_pdu_t *pdu, size_t len, const unsigned char *data)
+int coap_add_token(coap_pdu_t *pdu, size_t len, const unsigned char *data)
 {
     const size_t HEADERLENGTH = len + 4;
 
@@ -116,8 +96,8 @@ coap_add_token(coap_pdu_t *pdu, size_t len, const unsigned char *data)
 }
 
 /** @FIXME de-duplicate code with coap_add_option_later */
-size_t
-coap_add_option(coap_pdu_t *pdu, unsigned short type, unsigned int len, const unsigned char *data)
+size_t coap_add_option(coap_pdu_t *pdu, unsigned short type,
+                       unsigned int len, const unsigned char *data)
 {
     size_t optsize;
     coap_opt_t *opt;
@@ -150,8 +130,8 @@ coap_add_option(coap_pdu_t *pdu, unsigned short type, unsigned int len, const un
 }
 
 /** @FIXME de-duplicate code with coap_add_option */
-unsigned char *
-coap_add_option_later(coap_pdu_t *pdu, unsigned short type, unsigned int len)
+unsigned char *coap_add_option_later(coap_pdu_t *pdu, unsigned short type,
+                                     unsigned int len)
 {
     size_t optsize;
     coap_opt_t *opt;
@@ -183,8 +163,7 @@ coap_add_option_later(coap_pdu_t *pdu, unsigned short type, unsigned int len)
     return ((unsigned char *)opt) + optsize - len;
 }
 
-int
-coap_add_data(coap_pdu_t *pdu, unsigned int len, const unsigned char *data)
+int coap_add_data(coap_pdu_t *pdu, unsigned int len, const unsigned char *data)
 {
     assert(pdu);
     assert(pdu->data == NULL);
@@ -208,8 +187,7 @@ coap_add_data(coap_pdu_t *pdu, unsigned int len, const unsigned char *data)
     return 1;
 }
 
-int
-coap_get_data(coap_pdu_t *pdu, size_t *len, unsigned char **data)
+int coap_get_data(coap_pdu_t *pdu, size_t *len, unsigned char **data)
 {
     assert(pdu);
     assert(len);
@@ -219,7 +197,7 @@ coap_get_data(coap_pdu_t *pdu, size_t *len, unsigned char **data)
         *len = (unsigned char *)pdu->hdr + pdu->length - pdu->data;
         *data = pdu->data;
     }
-    else {			/* no data, clear everything */
+    else {                      /* no data, clear everything */
         *len = 0;
         *data = NULL;
     }
@@ -256,11 +234,10 @@ error_desc_t coap_error[] = {
     { COAP_RESPONSE_CODE(503), "Service Unavailable" },
     { COAP_RESPONSE_CODE(504), "Gateway Timeout" },
     { COAP_RESPONSE_CODE(505), "Proxying Not Supported" },
-    { 0, NULL }			/* end marker */
+    { 0, NULL }                 /* end marker */
 };
 
-char *
-coap_response_phrase(unsigned char code)
+char *coap_response_phrase(unsigned char code)
 {
     int i;
 
@@ -279,8 +256,7 @@ coap_response_phrase(unsigned char code)
  * returns the number of bytes opt has been advanced or @c 0
  * on error.
  */
-static size_t
-next_option_safe(coap_opt_t **optp, size_t *length)
+static size_t next_option_safe(coap_opt_t **optp, size_t *length)
 {
     coap_option_t option;
     size_t optsize;
@@ -301,8 +277,7 @@ next_option_safe(coap_opt_t **optp, size_t *length)
     return optsize;
 }
 
-int
-coap_pdu_parse(unsigned char *data, size_t length, coap_pdu_t *pdu)
+int coap_pdu_parse(unsigned char *data, size_t length, coap_pdu_t *pdu)
 {
     coap_opt_t *opt;
 

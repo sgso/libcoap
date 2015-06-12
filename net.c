@@ -1,73 +1,42 @@
-/* net.c -- CoAP network interface
- *
- * Copyright (C) 2010--2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
 
 #include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
-#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#elif HAVE_SYS_UNISTD_H
-#include <sys/unistd.h>
-#endif
 #include <sys/types.h>
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
 
-
-#include "net/ng_pktbuf.h"
-#include "net/ng_nettype.h"
-#include "net/ng_ipv6/hdr.h"
-#include "net/ng_udp.h"
-
-#include "debug.h"
-#include "mem.h"
-#include "str.h"
 #include "async.h"
-#include "resource.h"
-#include "option.h"
-#include "encode.h"
 #include "block.h"
+#include "debug.h"
+#include "encode.h"
+#include "mem.h"
 #include "net.h"
+#include "option.h"
+#include "resource.h"
+#include "str.h"
 
+#include "net/ng_ipv6/hdr.h"
+#include "net/ng_nettype.h"
+#include "net/ng_pktbuf.h"
+#include "net/ng_udp.h"
 
 time_t clock_offset;
 
-static inline coap_queue_t *
-coap_malloc_node(void)
+static inline coap_queue_t *coap_malloc_node(void)
 {
     return (coap_queue_t *)coap_malloc(sizeof(coap_queue_t));
 }
 
-static inline void
-coap_free_node(coap_queue_t *node)
+static inline void coap_free_node(coap_queue_t *node)
 {
     coap_free(node);
 }
 
 int print_wellknown(coap_context_t *, unsigned char *, size_t *, size_t, coap_opt_t *);
 
-void coap_handle_failed_notify(coap_context_t *, const coap_address_t *,
-                               const str *);
+void coap_handle_failed_notify(coap_context_t *, const coap_address_t *, const str *);
 
-unsigned int
-coap_adjust_basetime(coap_context_t *ctx, coap_tick_t now)
+unsigned int coap_adjust_basetime(coap_context_t *ctx, coap_tick_t now)
 {
     unsigned int result = 0;
     coap_tick_diff_t delta = now - ctx->sendqueue_basetime;
@@ -106,8 +75,7 @@ coap_adjust_basetime(coap_context_t *ctx, coap_tick_t now)
     return result;
 }
 
-int
-coap_insert_node(coap_queue_t **queue, coap_queue_t *node)
+int coap_insert_node(coap_queue_t **queue, coap_queue_t *node)
 {
     coap_queue_t *p, *q;
 
@@ -127,13 +95,13 @@ coap_insert_node(coap_queue_t **queue, coap_queue_t *node)
     if (node->t < q->t) {
         node->next = q;
         *queue = node;
-        q->t -= node->t;		/* make q->t relative to node->t */
+        q->t -= node->t;                /* make q->t relative to node->t */
         return 1;
     }
 
     /* search for right place to insert */
     do {
-        node->t -= q->t;		/* make node-> relative to q->t */
+        node->t -= q->t;                /* make node-> relative to q->t */
         p = q;
         q = q->next;
     }
@@ -141,7 +109,7 @@ coap_insert_node(coap_queue_t **queue, coap_queue_t *node)
 
     /* insert new item */
     if (q) {
-        q->t -= node->t;		/* make q->t relative to node->t */
+        q->t -= node->t;                /* make q->t relative to node->t */
     }
 
     node->next = q;
@@ -149,8 +117,7 @@ coap_insert_node(coap_queue_t **queue, coap_queue_t *node)
     return 1;
 }
 
-int
-coap_delete_node(coap_queue_t *node)
+int coap_delete_node(coap_queue_t *node)
 {
     if (!node) {
         return 0;
@@ -162,8 +129,7 @@ coap_delete_node(coap_queue_t *node)
     return 1;
 }
 
-void
-coap_delete_all(coap_queue_t *queue)
+void coap_delete_all(coap_queue_t *queue)
 {
     if (!queue) {
         return;
@@ -173,8 +139,7 @@ coap_delete_all(coap_queue_t *queue)
     coap_delete_node(queue);
 }
 
-coap_queue_t *
-coap_new_node(void)
+coap_queue_t *coap_new_node(void)
 {
     coap_queue_t *node;
     node = coap_malloc_node();
@@ -190,8 +155,7 @@ coap_new_node(void)
     return node;
 }
 
-coap_queue_t *
-coap_peek_next(coap_context_t *context)
+coap_queue_t *coap_peek_next(coap_context_t *context)
 {
     if (!context || !context->sendqueue) {
         return NULL;
@@ -200,8 +164,7 @@ coap_peek_next(coap_context_t *context)
     return context->sendqueue;
 }
 
-coap_queue_t *
-coap_pop_next(coap_context_t *context)
+coap_queue_t *coap_pop_next(coap_context_t *context)
 {
     coap_queue_t *next;
 
@@ -222,13 +185,12 @@ coap_pop_next(coap_context_t *context)
 
 #ifdef COAP_DEFAULT_WKC_HASHKEY
 /** Checks if @p Key is equal to the pre-defined hash key for.well-known/core. */
-#define is_wkc(Key)							\
+#define is_wkc(Key)                                                     \
   (memcmp((Key), COAP_DEFAULT_WKC_HASHKEY, sizeof(coap_key_t)) == 0)
 #else
 /* Implements a singleton to store a hash key for the .wellknown/core
  * resources. */
-int
-is_wkc(coap_key_t k)
+int is_wkc(coap_key_t k)
 {
     static coap_key_t wkc;
     static unsigned char _initialized = 0;
@@ -292,42 +254,21 @@ onerror:
     return NULL;
 }
 
-void
-coap_free_context(coap_context_t *context)
+void coap_free_context(coap_context_t *context)
 {
-#if defined(WITH_POSIX) || defined(WITH_LWIP)
-    coap_resource_t *res;
-#ifndef COAP_RESOURCES_NOHASH
-    coap_resource_t *rtmp;
-#endif
-#endif /* WITH_POSIX || WITH_LWIP */
-
     if (!context) {
         return;
     }
 
     coap_delete_all(context->sendqueue);
 
-
-#if defined(WITH_POSIX) || defined(WITH_LWIP)
-#ifdef COAP_RESOURCES_NOHASH
-    LL_FOREACH(context->resources, res) {
-#else
-    HASH_ITER(hh, context->resources, res, rtmp) {
-#endif
-        coap_delete_resource(context, res->key);
-    }
-#endif /* WITH_POSIX || WITH_LWIP */
-
     coap_free_endpoint(context->endpoint);
 }
 
-int
-coap_option_check_critical(coap_context_t *ctx,
+int coap_option_check_critical(coap_context_t *ctx,
                            coap_pdu_t *pdu,
                            coap_opt_filter_t unknown)
 {
-
     coap_opt_iterator_t opt_iter;
     int ok = 1;
 
@@ -359,8 +300,7 @@ coap_option_check_critical(coap_context_t *ctx,
     return ok;
 }
 
-void
-coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
+void coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
                     coap_tid_t *id)
 {
     (void)peer;
@@ -369,20 +309,12 @@ coap_transaction_id(const coap_address_t *peer, const coap_pdu_t *pdu,
     memset(h, 0, sizeof(coap_key_t));
 
     /* Compare the transport address. */
-
-#if defined(WITH_LWIP) || defined(WITH_CONTIKI)
-    /* FIXME: with lwip, we can do better */
-    coap_hash((const unsigned char *)&peer->port, sizeof(peer->port), h);
-    coap_hash((const unsigned char *)&peer->addr, sizeof(peer->addr), h);
-#endif /* WITH_LWIP || WITH_CONTIKI */
-
     coap_hash((const unsigned char *)&pdu->hdr->id, sizeof(unsigned short), h);
 
     *id = ((h[0] << 8) | h[1]) ^ ((h[2] << 8) | h[3]);
 }
 
-coap_tid_t
-coap_send_ack(coap_context_t *context,
+coap_tid_t coap_send_ack(coap_context_t *context,
               const coap_endpoint_t *local_interface,
               const coap_address_t *dst,
               coap_pdu_t *request)
@@ -428,22 +360,20 @@ coap_tid_t coap_send_impl(coap_context_t *context,
 }
 
 
-coap_tid_t
-coap_send(coap_context_t *context,
-          const coap_endpoint_t *local_interface,
-          const coap_address_t *dst,
-          coap_pdu_t *pdu)
+coap_tid_t coap_send(coap_context_t *context,
+                     const coap_endpoint_t *local_interface,
+                     const coap_address_t *dst,
+                     coap_pdu_t *pdu)
 {
     return coap_send_impl(context, local_interface, dst, pdu);
 }
 
-coap_tid_t
-coap_send_error(coap_context_t *context,
-                coap_pdu_t *request,
-                const coap_endpoint_t *local_interface,
-                const coap_address_t *dst,
-                unsigned char code,
-                coap_opt_filter_t opts)
+coap_tid_t coap_send_error(coap_context_t *context,
+                           coap_pdu_t *request,
+                           const coap_endpoint_t *local_interface,
+                           const coap_address_t *dst,
+                           unsigned char code,
+                           coap_opt_filter_t opts)
 {
     coap_pdu_t *response;
     coap_tid_t result = COAP_INVALID_TID;
@@ -461,12 +391,11 @@ coap_send_error(coap_context_t *context,
     return result;
 }
 
-coap_tid_t
-coap_send_message_type(coap_context_t *context,
-                       const coap_endpoint_t *local_interface,
-                       const coap_address_t *dst,
-                       coap_pdu_t *request,
-                       unsigned char type)
+coap_tid_t coap_send_message_type(coap_context_t *context,
+                                  const coap_endpoint_t *local_interface,
+                                  const coap_address_t *dst,
+                                  coap_pdu_t *request,
+                                  unsigned char type)
 {
     coap_pdu_t *response;
     coap_tid_t result = COAP_INVALID_TID;
@@ -483,11 +412,10 @@ coap_send_message_type(coap_context_t *context,
     return result;
 }
 
-coap_tid_t
-coap_send_confirmed(coap_context_t *context,
-                    const coap_endpoint_t *local_interface,
-                    const coap_address_t *dst,
-                    coap_pdu_t *pdu)
+coap_tid_t coap_send_confirmed(coap_context_t *context,
+                               const coap_endpoint_t *local_interface,
+                               const coap_address_t *dst,
+                               coap_pdu_t *pdu)
 {
     coap_queue_t *node;
     coap_tick_t now;
@@ -545,8 +473,7 @@ coap_send_confirmed(coap_context_t *context,
     return node->id;
 }
 
-coap_tid_t
-coap_retransmit(coap_context_t *context, coap_queue_t *node)
+coap_tid_t coap_retransmit(coap_context_t *context, coap_queue_t *node)
 {
     if (!context || !node) {
         return COAP_INVALID_TID;
@@ -571,7 +498,6 @@ coap_retransmit(coap_context_t *context, coap_queue_t *node)
     debug("** removed transaction %d\n", ntohs(node->id));
 
 #ifndef WITHOUT_OBSERVE
-
     /* Check if subscriptions exist that should be canceled after
        COAP_MAX_NOTIFY_FAILURES */
     if (node->pdu->hdr->code >= 64) {
@@ -595,8 +521,7 @@ coap_retransmit(coap_context_t *context, coap_queue_t *node)
  * This function returns @c 1 on success, or @c 0 if the option @p opt
  * would exceed @p maxpos.
  */
-static inline int
-check_opt_size(coap_opt_t *opt, unsigned char *maxpos)
+static inline int check_opt_size(coap_opt_t *opt, unsigned char *maxpos)
 {
     if (opt && opt < maxpos) {
         if (((*opt & 0x0f) < 0x0f) || (opt + 1 < maxpos)) {
@@ -609,17 +534,13 @@ check_opt_size(coap_opt_t *opt, unsigned char *maxpos)
 
 void coap_dispatch(coap_context_t *context, coap_queue_t *rcvd);
 
-int
-coap_read(coap_context_t *ctx)
+int coap_read(coap_context_t *ctx)
 {
     (void)ctx;
-#if defined(WITH_LWIP) || defined(WITH_CONTIKI)
-    char *buf;
-#endif
     ssize_t bytes_read = -1;
     coap_packet_t *packet = NULL;
     coap_address_t src;
-    int result = -1;		/* the value to be returned */
+    int result = -1;            /* the value to be returned */
 
 
     coap_address_init(&src);
@@ -636,10 +557,9 @@ coap_read(coap_context_t *ctx)
     return result;
 }
 
-int
-coap_handle_message(coap_context_t *ctx,
-                    const coap_endpoint_t *local_interface,
-                    coap_packet_t *packet)
+int coap_handle_message(coap_context_t *ctx,
+                        const coap_endpoint_t *local_interface,
+                        coap_packet_t *packet)
 {
     /* const coap_address_t *remote,  */
     /* unsigned char *msg, size_t msg_len) { */
@@ -765,8 +685,7 @@ error_early:
     return -result;
 }
 
-int
-coap_remove_from_queue(coap_queue_t **queue, coap_tid_t id, coap_queue_t **node)
+int coap_remove_from_queue(coap_queue_t **queue, coap_tid_t id, coap_queue_t **node)
 {
     coap_queue_t *p, *q;
 
@@ -780,7 +699,7 @@ coap_remove_from_queue(coap_queue_t **queue, coap_tid_t id, coap_queue_t **node)
         *node = *queue;
         *queue = (*queue)->next;
 
-        if (*queue) {	  /* adjust relative time of new queue head */
+        if (*queue) {     /* adjust relative time of new queue head */
             (*queue)->t += (*node)->t;
         }
 
@@ -799,10 +718,10 @@ coap_remove_from_queue(coap_queue_t **queue, coap_tid_t id, coap_queue_t **node)
     }
     while (q && id != q->id);
 
-    if (q) {			/* found transaction */
+    if (q) {                    /* found transaction */
         p->next = q->next;
 
-        if (p->next) {		/* must update relative time of p->next */
+        if (p->next) {          /* must update relative time of p->next */
             p->next->t += q->t;
         }
 
@@ -817,16 +736,14 @@ coap_remove_from_queue(coap_queue_t **queue, coap_tid_t id, coap_queue_t **node)
 
 }
 
-static inline int
-token_match(const unsigned char *a, size_t alen,
-            const unsigned char *b, size_t blen)
+static inline int token_match(const unsigned char *a, size_t alen,
+                              const unsigned char *b, size_t blen)
 {
     return alen == blen && (alen == 0 || memcmp(a, b, alen) == 0);
 }
 
-void
-coap_cancel_all_messages(coap_context_t *context, const coap_address_t *dst,
-                         const unsigned char *token, size_t token_length)
+void coap_cancel_all_messages(coap_context_t *context, const coap_address_t *dst,
+                              const unsigned char *token, size_t token_length)
 {
     /* cancel all messages in sendqueue that are for dst
      * and use the specified token */
@@ -867,8 +784,7 @@ coap_cancel_all_messages(coap_context_t *context, const coap_address_t *dst,
     }
 }
 
-coap_queue_t *
-coap_find_transaction(coap_queue_t *queue, coap_tid_t id)
+coap_queue_t *coap_find_transaction(coap_queue_t *queue, coap_tid_t id)
 {
     while (queue && queue->id != id) {
         queue = queue->next;
@@ -877,16 +793,15 @@ coap_find_transaction(coap_queue_t *queue, coap_tid_t id)
     return queue;
 }
 
-coap_pdu_t *
-coap_new_error_response(coap_pdu_t *request, unsigned char code,
-                        coap_opt_filter_t opts)
+coap_pdu_t *coap_new_error_response(coap_pdu_t *request, unsigned char code,
+                                    coap_opt_filter_t opts)
 {
     coap_opt_iterator_t opt_iter;
     coap_pdu_t *response;
     size_t size = sizeof(coap_hdr_t) + request->hdr->token_length;
     int type;
     coap_opt_t *option;
-    unsigned short opt_type = 0;	/* used for calculating delta-storage */
+    unsigned short opt_type = 0;        /* used for calculating delta-storage */
 
 #if COAP_ERROR_PHRASE_LENGTH > 0
     char *phrase = coap_response_phrase(code);
@@ -988,14 +903,14 @@ coap_new_error_response(coap_pdu_t *request, unsigned char code,
  * Quick hack to determine the size of the resource description for
  * .well-known/core.
  */
-static inline size_t
-get_wkc_len(coap_context_t *context, coap_opt_t *query_filter)
+static inline size_t get_wkc_len(coap_context_t *context, coap_opt_t *query_filter)
 {
     unsigned char buf[1];
     size_t len = 0;
 
     if (print_wellknown(context, buf, &len, UINT_MAX, query_filter)
-        & COAP_PRINT_STATUS_ERROR) {
+        & COAP_PRINT_STATUS_ERROR)
+    {
         warn("cannot determine length of /.well-known/core\n");
         return 0;
     }
@@ -1007,15 +922,14 @@ get_wkc_len(coap_context_t *context, coap_opt_t *query_filter)
 
 #define SZX_TO_BYTES(SZX) ((size_t)(1 << ((SZX) + 4)))
 
-coap_pdu_t *
-wellknown_response(coap_context_t *context, coap_pdu_t *request)
+coap_pdu_t *wellknown_response(coap_context_t *context, coap_pdu_t *request)
 {
     coap_pdu_t *resp;
     coap_opt_iterator_t opt_iter;
     size_t len, wkc_len;
     unsigned char buf[2];
     int result = 0;
-    int need_block2 = 0;	   /* set to 1 if Block2 option is required */
+    int need_block2 = 0;           /* set to 1 if Block2 option is required */
     coap_block_t block;
     coap_opt_t *query_filter;
     size_t offset = 0;
@@ -1138,8 +1052,7 @@ error:
  * This function returns @c 0 when the token is unknown with this
  * peer, or a value greater than zero otherwise.
  */
-static int
-coap_cancel(coap_context_t *context, const coap_queue_t *sent)
+static int coap_cancel(coap_context_t *context, const coap_queue_t *sent)
 {
 #ifndef WITHOUT_OBSERVE
     coap_resource_t *r;
@@ -1182,11 +1095,10 @@ coap_cancel(coap_context_t *context, const coap_queue_t *sent)
 #endif /* WITOUT_OBSERVE */
 }
 
-#define WANT_WKC(Pdu,Key)					\
+#define WANT_WKC(Pdu,Key)                                       \
   (((Pdu)->hdr->code == COAP_REQUEST_GET) && is_wkc(Key))
 
-void
-handle_request(coap_context_t *context, coap_queue_t *node)
+void handle_request(coap_context_t *context, coap_queue_t *node)
 {
     coap_method_handler_t h = NULL;
     coap_pdu_t *response = NULL;
@@ -1208,7 +1120,7 @@ handle_request(coap_context_t *context, coap_queue_t *node)
         switch (node->pdu->hdr->code) {
 
             case COAP_REQUEST_GET:
-                if (is_wkc(key)) {	/* GET request for .well-known/core */
+                if (is_wkc(key)) {      /* GET request for .well-known/core */
                     coap_log(LOG_INFO, "create default response for %s\n", COAP_DEFAULT_URI_WELLKNOWN);
                     response = wellknown_response(context, node->pdu);
 
@@ -1224,7 +1136,7 @@ handle_request(coap_context_t *context, coap_queue_t *node)
 
                 break;
 
-            default: 			/* any other request type */
+            default:                    /* any other request type */
 
                 debug("unhandled request for unknown resource 0x%02x%02x%02x%02x\r\n",
                       key[0], key[1], key[2], key[3]);
@@ -1346,11 +1258,9 @@ handle_request(coap_context_t *context, coap_queue_t *node)
     }
 }
 
-static inline void
-handle_response(coap_context_t *context,
-                coap_queue_t *sent, coap_queue_t *rcvd)
+static inline void handle_response(coap_context_t *context,
+                                   coap_queue_t *sent, coap_queue_t *rcvd)
 {
-
     coap_send_ack(context, &rcvd->local_if, &rcvd->remote, rcvd->pdu);
 
     /* In a lossy context, the ACK of a separate response may have
@@ -1369,21 +1279,14 @@ handle_response(coap_context_t *context,
     }
 }
 
-static inline int
-#ifdef __GNUC__
-handle_locally(coap_context_t *context __attribute__((unused)),
-               coap_queue_t *node __attribute__((unused)))
+static inline int handle_locally(coap_context_t *context, coap_queue_t *node)
 {
-#else /* not a GCC */
-handle_locally(coap_context_t *context, coap_queue_t *node)
-{
-#endif /* GCC */
-    /* this function can be used to check if node->pdu is really for us */
+    (void)context;
+    (void)node;
     return 1;
 }
 
-void
-coap_dispatch(coap_context_t *context, coap_queue_t *rcvd)
+void coap_dispatch(coap_context_t *context, coap_queue_t *rcvd)
 {
     coap_queue_t *sent = NULL;
     coap_pdu_t *response;
@@ -1438,14 +1341,14 @@ coap_dispatch(coap_context_t *context, coap_queue_t *rcvd)
 
                 goto cleanup;
 
-            case COAP_MESSAGE_NON :	/* check for unknown critical options */
+            case COAP_MESSAGE_NON :     /* check for unknown critical options */
                 if (coap_option_check_critical(context, rcvd->pdu, opt_filter) == 0) {
                     goto cleanup;
                 }
 
                 break;
 
-            case COAP_MESSAGE_CON :	/* check for unknown critical options */
+            case COAP_MESSAGE_CON :     /* check for unknown critical options */
                 if (coap_option_check_critical(context, rcvd->pdu, opt_filter) == 0) {
 
                     /* FIXME: send response only if we have received a request. Otherwise,
@@ -1495,10 +1398,7 @@ coap_dispatch(coap_context_t *context, coap_queue_t *rcvd)
     }
 }
 
-int
-coap_can_exit(coap_context_t *context)
+int coap_can_exit(coap_context_t *context)
 {
     return !context || (context->sendqueue == NULL);
 }
-
-

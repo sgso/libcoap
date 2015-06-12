@@ -1,22 +1,13 @@
-/*
- * bits.h -- bit vector manipulation
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 /**
  * @file bits.h
  * @brief bit vector manipulation
  */
 
-#ifndef _BITS_H_
-#define _BITS_H_
+#ifndef BITS_H_
+#define BITS_H_
 
-#include <sys/types.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 /**
  * Sets the bit @p bit in bit-vector @p vec. This function returns @c
@@ -29,8 +20,7 @@
  *
  * @return @c -1 if @p bit does not fit into @p vec, @c 1 otherwise.
  */
-inline static int
-bits_setb(uint8_t *vec, size_t size, uint8_t bit)
+inline static int bits_setb(uint8_t *vec, size_t size, uint8_t bit)
 {
     if (size <= (bit >> 3)) {
         return -1;
@@ -51,8 +41,7 @@ bits_setb(uint8_t *vec, size_t size, uint8_t bit)
  *
  * @return @c -1 if @p bit does not fit into @p vec, @c 1 otherwise.
  */
-inline static int
-bits_clrb(uint8_t *vec, size_t size, uint8_t bit)
+inline static int bits_clrb(uint8_t *vec, size_t size, uint8_t bit)
 {
     if (size <= (bit >> 3)) {
         return -1;
@@ -72,8 +61,7 @@ bits_clrb(uint8_t *vec, size_t size, uint8_t bit)
  *
  * @return @c 1 if the bit is set, @c 0 otherwise.
  */
-inline static int
-bits_getb(const uint8_t *vec, size_t size, uint8_t bit)
+inline static int bits_getb(const uint8_t *vec, size_t size, uint8_t bit)
 {
     if (size <= (bit >> 3)) {
         return -1;
@@ -82,4 +70,4 @@ bits_getb(const uint8_t *vec, size_t size, uint8_t bit)
     return (*(vec + (bit >> 3)) & (1 << (bit & 0x07))) != 0;
 }
 
-#endif /* _BITS_H_ */
+#endif /* BITS_H_ */

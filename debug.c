@@ -1,17 +1,6 @@
-/* debug.c -- debug utilities
- *
- * Copyright (C) 2010--2012,2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
 
-#if defined(HAVE_ASSERT_H) && !defined(assert)
-# include <assert.h>
-#endif
-
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,75 +17,11 @@
 #include "debug.h"
 #include "net.h"
 
-
-const char *coap_package_name(void)
-{
-    return PACKAGE_NAME;
-}
-
-const char *coap_package_version(void)
-{
-    return PACKAGE_STRING;
-}
-
-#ifdef HAVE_TIME_H
-
-static inline size_t
-print_timestamp(char *s, size_t len, coap_tick_t t)
-{
-    struct tm *tmp;
-    time_t now = clock_offset + (t / COAP_TICKS_PER_SECOND);
-    tmp = localtime(&now);
-    return strftime(s, len, "%b %d %H:%M:%S", tmp);
-}
-
-#else /* alternative implementation: just print the timestamp */
-
-static inline size_t
-print_timestamp(char *s, size_t len, coap_tick_t t)
-{
-#ifdef HAVE_SNPRINTF
-    return snprintf(s, len, "%u.%03u",
-                    (unsigned int)(clock_offset + (t / COAP_TICKS_PER_SECOND)),
-                    (unsigned int)(t % COAP_TICKS_PER_SECOND));
-#else /* HAVE_SNPRINTF */
-    (void)s;
-    (void)len;
-    (void)t;
-    /* @todo do manual conversion of timestamp */
-    return 0;
-#endif /* HAVE_SNPRINTF */
-}
-
-#endif /* HAVE_TIME_H */
-
 #ifndef NDEBUG
 
-#ifndef HAVE_STRNLEN
-/**
- * A length-safe strlen() fake.
- *
- * @param s      The string to count characters != 0.
- * @param maxlen The maximum length of @p s.
- *
- * @return The length of @p s.
- */
-static inline size_t
-strnlen(const char *s, size_t maxlen)
-{
-    size_t n = 0;
-
-    while (*s++ && n < maxlen) {
-        ++n;
-    }
-
-    return n;
-}
-#endif /* HAVE_STRNLEN */
-
-unsigned int
-print_readable(const unsigned char *data, unsigned int len,
-               unsigned char *result, unsigned int buflen, int encode_always)
+unsigned int print_readable(const unsigned char *data, unsigned int len,
+                            unsigned char *result, unsigned int buflen,
+                            int encode_always)
 {
     const unsigned char hex[] = "0123456789ABCDEF";
     unsigned int cnt = 0;
@@ -140,69 +65,18 @@ print_readable(const unsigned char *data, unsigned int len,
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-size_t
-coap_print_addr(const struct coap_address_t *addr, unsigned char *buf, size_t len)
+size_t coap_print_addr(const struct coap_address_t *addr,
+                       unsigned char *buf, size_t len)
 {
     (void)addr;
     (void)buf;
     (void)len;
-#ifdef HAVE_ARPA_INET_H
-    const void *addrptr = NULL;
-    in_port_t port;
-    unsigned char *p = buf;
-
-    switch (addr->addr.sa.sa_family) {
-        case AF_INET:
-            addrptr = &addr->addr.sin.sin_addr;
-            port = ntohs(addr->addr.sin.sin_port);
-            break;
-
-        case AF_INET6:
-            if (len < 7) { /* do not proceed if buffer is even too short for [::]:0 */
-                return 0;
-            }
-
-            *p++ = '[';
-
-            addrptr = &addr->addr.sin6.sin6_addr;
-            port = ntohs(addr->addr.sin6.sin6_port);
-
-            break;
-
-        default:
-            memcpy(buf, "(unknown address type)", min(22, len));
-            return min(22, len);
-    }
-
-    if (inet_ntop(addr->addr.sa.sa_family, addrptr, (char *)p, len) == 0) {
-        perror("coap_print_addr");
-        return 0;
-    }
-
-    p += strnlen((char *)p, len);
-
-    if (addr->addr.sa.sa_family == AF_INET6) {
-        if (p < buf + len) {
-            *p++ = ']';
-        }
-        else {
-            return 0;
-        }
-    }
-
-    p += snprintf((char *)p, buf + len - p + 1, ":%d", port);
-
-    return buf + len - p;
-#else /* HAVE_ARPA_INET_H */
-    /* TODO: output addresses manually */
-    /* #   warning "inet_ntop() not available, network addresses will not be included in debug output" */
+    /* TODO: output address */
     return 0;
-#endif
 }
 
 
-void
-coap_show_pdu(const coap_pdu_t *pdu)
+void coap_show_pdu(const coap_pdu_t *pdu)
 {
     unsigned char buf[COAP_MAX_PDU_SIZE]; /* need some space for output creation */
     int encode = 0, have_options = 0;
@@ -261,6 +135,5 @@ coap_show_pdu(const coap_pdu_t *pdu)
     fprintf(COAP_DEBUG_FD, "\n");
     fflush(COAP_DEBUG_FD);
 }
-
 
 #endif /* NDEBUG */

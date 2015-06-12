@@ -1,13 +1,5 @@
-/* str.h -- strings to be used in the CoAP library
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-#ifndef _COAP_STR_H_
-#define _COAP_STR_H_
+#ifndef COAP_STR_H_
+#define COAP_STR_H_
 
 #include <string.h>
 
@@ -27,4 +19,4 @@ str *coap_new_string(size_t size);
 /** Deletes the given string and releases any memory allocated. */
 void coap_delete_string(str *);
 
-#endif /* _COAP_STR_H_ */
+#endif /* COAP_STR_H_ */

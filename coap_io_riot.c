@@ -4,29 +4,16 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "net/ng_netreg.h"
-#include "net/ng_netbase.h"
+#include "coap_io.h"
 #include "debug.h"
 #include "mem.h"
-#include "coap_io.h"
-
-
-static inline struct coap_endpoint_t *
-coap_malloc_posix_endpoint(void)
-{
-    return (struct coap_endpoint_t *)coap_malloc(sizeof(struct coap_endpoint_t));
-}
-
-static inline void
-coap_free_posix_endpoint(struct coap_endpoint_t *ep)
-{
-    coap_free(ep);
-}
+#include "net/ng_netbase.h"
+#include "net/ng_netreg.h"
 
 coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags)
 {
     coap_endpoint_t *ep;
-    ep = coap_malloc_posix_endpoint();
+    ep = (struct coap_endpoint_t *)coap_malloc(sizeof(struct coap_endpoint_t));
 
     if (!ep) {
         coap_log(LOG_WARNING, "coap_new_endpoint: malloc");
@@ -40,18 +27,11 @@ coap_endpoint_t *coap_new_endpoint(const coap_address_t *addr, int flags)
     return ep;
 }
 
-void coap_free_endpoint(coap_endpoint_t *ep)
-{
+void coap_free_endpoint(coap_endpoint_t *ep) {
     if (ep) {
-        coap_free_posix_endpoint((struct coap_endpoint_t *)ep);
+        coap_free(ep);
     }
 }
-
-#ifdef __GNUC__
-#define UNUSED_PARAM __attribute__ ((unused))
-#else /* not a GCC */
-#define UNUSED_PARAM
-#endif /* GCC */
 
 ssize_t coap_network_send(struct coap_context_t *context,
                           const coap_endpoint_t *local_interface,
@@ -96,26 +76,15 @@ ssize_t coap_network_send(struct coap_context_t *context,
     return pdu->length;
 }
 
-/* static coap_packet_t *coap_malloc_packet(void) { */
-/*     coap_packet_t *packet; */
-/*     const size_t need = sizeof(coap_packet_t) + COAP_MAX_PDU_SIZE; */
-
-/*     packet = (coap_packet_t *)coap_malloc(need); */
-/*     if (packet) { */
-/*         memset(packet, 0, need); */
-/*     } */
-/*     return NULL; */
-/*     return packet; */
-/* } */
-
 void coap_free_packet(coap_packet_t *packet)
 {
     /* checks for NULL itself */
     ng_pktbuf_release(packet);
 }
 
-static inline size_t coap_get_max_packetlength(const coap_packet_t *packet UNUSED_PARAM)
+static inline size_t coap_get_max_packetlength(const coap_packet_t *packet)
 {
+    (void)packet;
     return COAP_MAX_PDU_SIZE;
 }
 

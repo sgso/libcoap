@@ -1,13 +1,5 @@
-/* uri.h -- helper functions for URI treatment
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
-#ifndef _COAP_URI_H_
-#define _COAP_URI_H_
+#ifndef COAP_URI_H_
+#define COAP_URI_H_
 
 #include "hashkey.h"
 #include "str.h"
@@ -17,9 +9,8 @@
  * option-creation functions. */
 typedef struct {
     str host;			/**< host part of the URI */
-    unsigned short port;		/**< The port in host byte order */
-    str path;			/**< Beginning of the first path segment.
-				   Use coap_split_path() to create Uri-Path options */
+    unsigned short port;	/**< The port in host byte order */
+    str path;			/**< Beginning of the first path segment. */
     str query;			/**<  The query part if present */
 } coap_uri_t;
 
@@ -96,11 +87,10 @@ typedef struct {
  *
  * @return The initialized iterator object @p pi.
  */
-coap_parse_iterator_t *
-coap_parse_iterator_init(unsigned char *s, size_t n,
-                         unsigned char separator,
-                         unsigned char *delim, size_t dlen,
-                         coap_parse_iterator_t *pi);
+coap_parse_iterator_t *coap_parse_iterator_init(unsigned char *s, size_t n,
+                                                unsigned char separator,
+                                                unsigned char *delim, size_t dlen,
+                                                coap_parse_iterator_t *pi);
 
 /**
  * Updates the iterator @p pi to point to the next token. This
@@ -131,8 +121,7 @@ unsigned char *coap_parse_next(coap_parse_iterator_t *pi);
  * @note The host name part will be converted to lower case by this
  * function.
  */
-int
-coap_split_uri(unsigned char *str_var, size_t len, coap_uri_t *uri);
+int coap_split_uri(unsigned char *str_var, size_t len, coap_uri_t *uri);
 
 /**
  * Splits the given URI path into segments. Each segment is preceded
@@ -168,6 +157,4 @@ int coap_split_path(const unsigned char *s, size_t length,
 int coap_split_query(const unsigned char *s, size_t length,
                      unsigned char *buf, size_t *buflen);
 
-/** @} */
-
-#endif /* _COAP_URI_H_ */
+#endif /* COAP_URI_H_ */

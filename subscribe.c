@@ -1,33 +1,15 @@
-/* subscribe.c -- subscription handling for CoAP
- *                see draft-ietf-coap-observe-09
- *
- * Copyright (C) 2010--2013 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
 
-#if defined(HAVE_ASSERT_H) && !defined(assert)
-# include <assert.h>
-#endif
-
+#include <assert.h>
 #include <stdio.h>
 #include <limits.h>
-#ifdef HAVE_ARPA_INET_H
-# include <arpa/inet.h>
-#endif
-
-/* #include "resource.h" */
 
 #include "mem.h"
 #include "encode.h"
 #include "debug.h"
 #include "subscribe.h"
 
-void
-coap_subscription_init(coap_subscription_t *s)
+void coap_subscription_init(coap_subscription_t *s)
 {
     assert(s);
     memset(s, 0, sizeof(coap_subscription_t));
@@ -36,9 +18,8 @@ coap_subscription_init(coap_subscription_t *s)
 #if 0
 #define HMASK (ULONG_MAX >> 1)
 
-void
-notify(coap_context_t *context, coap_resource_t *res,
-       coap_subscription_t *sub, unsigned int duration, int code)
+void notify(coap_context_t *context, coap_resource_t *res,
+            coap_subscription_t *sub, unsigned int duration, int code)
 {
 #if 0
     coap_pdu_t *pdu;
@@ -54,7 +35,7 @@ notify(coap_context_t *context, coap_resource_t *res,
     }
 
     pdu->hdr->type = COAP_MESSAGE_CON;
-    pdu->hdr->id = rand();	/* use a random transaction id */
+    pdu->hdr->id = rand();      /* use a random transaction id */
     pdu->hdr->code = code;
 
     /* FIXME: content-type and data (how about block?) */
@@ -94,7 +75,6 @@ notify(coap_context_t *context, coap_resource_t *res,
     }
 
 #ifndef NDEBUG
-
     if (inet_ntop(sub->subscriber.addr.sa.sa_family,
                   &sub->subscriber.addr, addr, sizeof(addr))) {
         debug("*** notify for %s to [%s]\n", res->uri->path.s, addr);
@@ -115,8 +95,7 @@ notify(coap_context_t *context, coap_resource_t *res,
 #endif
 }
 
-void
-coap_check_resource_list(coap_context_t *context)
+void coap_check_resource_list(coap_context_t *context)
 {
     coap_resource_t *res, *tmp;
     coap_list_t *sub;
@@ -127,7 +106,7 @@ coap_check_resource_list(coap_context_t *context)
         return;
     }
 
-    time(&now);			/* FIXME: use coap_ticks() */
+    time(&now);                 /* FIXME: use coap_ticks() */
 
     HASH_ITER(hh, context->resources, res, tmp) {
         if (res->dirty) {
@@ -152,8 +131,7 @@ coap_check_resource_list(coap_context_t *context)
 }
 
 #if 0
-coap_resource_t *
-coap_get_resource_from_key(coap_context_t *ctx, coap_key_t key)
+coap_resource_t *coap_get_resource_from_key(coap_context_t *ctx, coap_key_t key)
 {
     coap_list_t *node;
 
@@ -173,8 +151,7 @@ coap_get_resource_from_key(coap_context_t *ctx, coap_key_t key)
     return NULL;
 }
 
-coap_resource_t *
-coap_get_resource(coap_context_t *ctx, coap_uri_t *uri)
+coap_resource_t *coap_get_resource(coap_context_t *ctx, coap_uri_t *uri)
 {
 #ifndef NDEBUG
     int i;
@@ -190,8 +167,7 @@ coap_get_resource(coap_context_t *ctx, coap_uri_t *uri)
 }
 #endif
 
-void
-coap_check_subscriptions(coap_context_t *context)
+void coap_check_subscriptions(coap_context_t *context)
 {
     time_t now;
     coap_list_t *node;
@@ -230,8 +206,7 @@ coap_check_subscriptions(coap_context_t *context)
     }
 }
 
-void
-coap_free_resource(void *res)
+void coap_free_resource(void *res)
 {
     if (res) {
 #if 0
@@ -246,8 +221,7 @@ coap_free_resource(void *res)
  * Deletes the resource that is identified by key. Returns 1 if the resource was
  * removed, 0 on error (e.g. if no such resource exists).
  */
-int
-coap_delete_resource(coap_context_t *context, coap_key_t key)
+int coap_delete_resource(coap_context_t *context, coap_key_t key)
 {
     coap_list_t *prev, *node;
 
@@ -278,9 +252,10 @@ coap_delete_resource(coap_context_t *context, coap_key_t key)
 }
 #endif
 
-coap_subscription_t *
-coap_new_subscription(coap_context_t *context, const coap_uri_t *resource,
-                      const struct sockaddr *addr, socklen_t addrlen, time_t expiry)
+coap_subscription_t *coap_new_subscription(coap_context_t *context,
+                                           const coap_uri_t *resource,
+                                           const struct sockaddr *addr,
+                                           socklen_t addrlen, time_t expiry)
 {
     coap_subscription_t *result;
 
@@ -299,8 +274,8 @@ coap_new_subscription(coap_context_t *context, const coap_uri_t *resource,
 
 }
 
-coap_list_t *
-coap_list_push_first(coap_list_t **list, void *data, void (*delete_func)(void *))
+coap_list_t *coap_list_push_first(coap_list_t **list,
+                                  void *data, void (*delete_func)(void *))
 {
     coap_list_t *node;
     node = coap_new_listnode(data, delete_func);
@@ -320,18 +295,17 @@ coap_list_push_first(coap_list_t **list, void *data, void (*delete_func)(void *)
     return node;
 }
 
-int
-_order_subscription(void *a, void *b)
+int _order_subscription(void *a, void *b)
 {
     if (!a || !b) {
         return a < b ? -1 : 1;
     }
 
-    return ((coap_subscription_t *)a)->expires < ((coap_subscription_t *)b)->expires ? -1 : 1;
+    return (((coap_subscription_t *)a)->expires
+            < ((coap_subscription_t *)b)->expires ? -1 : 1);
 }
 
-coap_key_t
-coap_subscription_hash(coap_subscription_t *subscription)
+coap_key_t coap_subscription_hash(coap_subscription_t *subscription)
 {
     if (!subscription) {
         return COAP_INVALID_HASHKEY;
@@ -341,9 +315,8 @@ coap_subscription_hash(coap_subscription_t *subscription)
                   sizeof(subscription->subscriber));
 }
 
-coap_key_t
-coap_add_subscription(coap_context_t *context,
-                      coap_subscription_t *subscription)
+coap_key_t coap_add_subscription(coap_context_t *context,
+                                 coap_subscription_t *subscription)
 {
     coap_list_t *node;
 
@@ -356,18 +329,17 @@ coap_add_subscription(coap_context_t *context,
     }
 
     if (!coap_insert(&context->subscriptions, node, _order_subscription)) {
-        coap_free(node);	/* do not call coap_delete(), so subscription object will survive */
+        coap_free(node);        /* do not call coap_delete(), so subscription object will survive */
         return COAP_INVALID_HASHKEY;
     }
 
     return coap_subscription_hash(subscription);
 }
 
-coap_subscription_t *
-coap_find_subscription(coap_context_t *context,
-                       coap_key_t hashkey,
-                       struct sockaddr *addr,
-                       str *token)
+coap_subscription_t *coap_find_subscription(coap_context_t *context,
+                                            coap_key_t hashkey,
+                                            struct sockaddr *addr,
+                                            str *token)
 {
 #if 0
     coap_list_t *node;
@@ -384,7 +356,7 @@ coap_find_subscription(coap_context_t *context,
     for (node = context->subscriptions; node; node = node->next) {
         if (COAP_SUBSCRIPTION(node)->resource == hashkey) {
 
-            if (token) {	   /* do not proceed if tokens do not match */
+            if (token) {           /* do not proceed if tokens do not match */
                 if (token->length != COAP_SUBSCRIPTION(node)->token.length ||
                     memcmp(token->s, COAP_SUBSCRIPTION(node)->token.s,
                            token->length) != 0) {
@@ -405,10 +377,9 @@ coap_find_subscription(coap_context_t *context,
     return NULL;
 }
 
-int
-coap_delete_subscription(coap_context_t *context,
-                         coap_key_t key,
-                         struct sockaddr *addr)
+int coap_delete_subscription(coap_context_t *context,
+                             coap_key_t key,
+                             struct sockaddr *addr)
 {
 #if 0
     coap_list_t *prev, *node;

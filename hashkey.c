@@ -1,18 +1,9 @@
-/* hashkey.c -- definition of hash key type and helper functions
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "hashkey.h"
 
 /* Caution: When changing this, update COAP_DEFAULT_WKC_HASHKEY
  * accordingly (see int coap_hash_path());
  */
-void
-coap_hash_impl(const unsigned char *s, unsigned int len, coap_key_t h)
+void coap_hash_impl(const unsigned char *s, unsigned int len, coap_key_t h)
 {
     size_t j;
 

@@ -1,27 +1,16 @@
-/* resource.c -- generic resource handling
- *
- * Copyright (C) 2010--2014 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
-#include "net.h"
 #include "debug.h"
+#include "mem.h"
+#include "net.h"
 #include "resource.h"
 #include "subscribe.h"
-
-
 #include "utlist.h"
-#include "mem.h"
 
-#define COAP_MALLOC_TYPE(Type) \
-  ((coap_##Type##_t *)coap_malloc(sizeof(coap_##Type##_t)))
+#define COAP_MALLOC_TYPE(Type)                                  \
+    ((coap_##Type##_t *)coap_malloc(sizeof(coap_##Type##_t)))
 #define COAP_FREE_TYPE(Type, Object) coap_free(Object)
 
-coap_iterator_t *
-coap_iterator_init(void *storage, coap_iterator_t *ri)
+coap_iterator_t *coap_iterator_init(void *storage, coap_iterator_t *ri)
 {
     assert(storage);
     assert(ri);
@@ -36,8 +25,7 @@ struct thing {
     struct thing *next;
 };
 
-void *
-coap_iterator_next(coap_iterator_t *ri)
+void *coap_iterator_next(coap_iterator_t *ri)
 {
     void *item;
     assert(ri);
@@ -50,7 +38,6 @@ coap_iterator_next(coap_iterator_t *ri)
 
     return item;
 }
-
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
@@ -68,7 +55,7 @@ coap_iterator_next(coap_iterator_t *ri)
   } else {						\
     (Offset)--;						\
   }							\
- 
+
 /**
  * Adds Char to Buf if Offset is zero and Buf is less than Bufend.
  */
@@ -91,8 +78,7 @@ coap_iterator_next(coap_iterator_t *ri)
     }									\
   }
 
-int
-match(const str *text, const str *pattern, int match_prefix, int match_substring)
+int match(const str *text, const str *pattern, int match_prefix, int match_substring)
 {
     assert(text);
     assert(pattern);
@@ -314,8 +300,7 @@ print_wellknown(coap_context_t *context, unsigned char *buf, size_t *buflen,
     return result;
 }
 
-coap_resource_t *
-coap_resource_init(const unsigned char *uri, size_t len, int flags)
+coap_resource_t *coap_resource_init(const unsigned char *uri, size_t len, int flags)
 {
     coap_resource_t *r;
 
@@ -340,11 +325,10 @@ coap_resource_init(const unsigned char *uri, size_t len, int flags)
     return r;
 }
 
-coap_attr_t *
-coap_add_attr(coap_resource_t *resource,
-              const unsigned char *name, size_t nlen,
-              const unsigned char *val, size_t vlen,
-              int flags)
+coap_attr_t *coap_add_attr(coap_resource_t *resource,
+                           const unsigned char *name, size_t nlen,
+                           const unsigned char *val, size_t vlen,
+                           int flags)
 {
     coap_attr_t *attr;
 
@@ -373,9 +357,8 @@ coap_add_attr(coap_resource_t *resource,
     return attr;
 }
 
-coap_attr_t *
-coap_find_attr(coap_resource_t *resource,
-               const unsigned char *name, size_t nlen)
+coap_attr_t *coap_find_attr(coap_resource_t *resource,
+                            const unsigned char *name, size_t nlen)
 {
     coap_attr_t *attr;
 
@@ -393,8 +376,7 @@ coap_find_attr(coap_resource_t *resource,
     return NULL;
 }
 
-void
-coap_delete_attr(coap_attr_t *attr)
+void coap_delete_attr(coap_attr_t *attr)
 {
     if (!attr) {
         return;
@@ -411,8 +393,7 @@ coap_delete_attr(coap_attr_t *attr)
     coap_free(attr);
 }
 
-void
-coap_hash_request_uri(const coap_pdu_t *request, coap_key_t key)
+void coap_hash_request_uri(const coap_pdu_t *request, coap_key_t key)
 {
     coap_opt_iterator_t opt_iter;
     coap_opt_filter_t filter;
@@ -430,8 +411,7 @@ coap_hash_request_uri(const coap_pdu_t *request, coap_key_t key)
     }
 }
 
-void
-coap_add_resource(coap_context_t *context, coap_resource_t *resource)
+void coap_add_resource(coap_context_t *context, coap_resource_t *resource)
 {
 #ifdef COAP_RESOURCES_NOHASH
     LL_PREPEND(context->resources, resource);
@@ -440,8 +420,7 @@ coap_add_resource(coap_context_t *context, coap_resource_t *resource)
 #endif
 }
 
-int
-coap_delete_resource(coap_context_t *context, coap_key_t key)
+int coap_delete_resource(coap_context_t *context, coap_key_t key)
 {
     coap_resource_t *resource;
     coap_attr_t *attr, *tmp;
@@ -495,9 +474,8 @@ coap_get_resource_from_key(coap_context_t *context, coap_key_t key)
 #endif
 }
 
-coap_print_status_t
-coap_print_link(const coap_resource_t *resource,
-                unsigned char *buf, size_t *len, size_t *offset)
+coap_print_status_t coap_print_link(const coap_resource_t *resource,
+                                    unsigned char *buf, size_t *len, size_t *offset)
 {
     unsigned char *p = buf;
     const unsigned char *bufend = buf + *len;
@@ -544,9 +522,8 @@ coap_print_link(const coap_resource_t *resource,
 }
 
 #ifndef WITHOUT_OBSERVE
-coap_subscription_t *
-coap_find_observer(coap_resource_t *resource, const coap_address_t *peer,
-                   const str *token)
+coap_subscription_t *coap_find_observer(coap_resource_t *resource, const coap_address_t *peer,
+                                        const str *token)
 {
     coap_subscription_t *s;
 
@@ -564,11 +541,10 @@ coap_find_observer(coap_resource_t *resource, const coap_address_t *peer,
     return NULL;
 }
 
-coap_subscription_t *
-coap_add_observer(coap_resource_t *resource,
-                  const coap_endpoint_t *local_interface,
-                  const coap_address_t *observer,
-                  const str *token)
+coap_subscription_t *coap_add_observer(coap_resource_t *resource,
+                                       const coap_endpoint_t *local_interface,
+                                       const coap_address_t *observer,
+                                       const str *token)
 {
     coap_subscription_t *s;
 
@@ -605,9 +581,8 @@ coap_add_observer(coap_resource_t *resource,
     return s;
 }
 
-void
-coap_touch_observer(coap_context_t *context, const coap_address_t *observer,
-                    const str *token)
+void coap_touch_observer(coap_context_t *context, const coap_address_t *observer,
+                         const str *token)
 {
     coap_resource_t *r;
     coap_subscription_t *s;
@@ -626,9 +601,8 @@ coap_touch_observer(coap_context_t *context, const coap_address_t *observer,
     }
 }
 
-int
-coap_delete_observer(coap_resource_t *resource, const coap_address_t *observer,
-                     const str *token)
+int coap_delete_observer(coap_resource_t *resource, const coap_address_t *observer,
+                         const str *token)
 {
     coap_subscription_t *s;
 
@@ -643,8 +617,7 @@ coap_delete_observer(coap_resource_t *resource, const coap_address_t *observer,
     return s != NULL;
 }
 
-static void
-coap_notify_observers(coap_context_t *context, coap_resource_t *r)
+static void coap_notify_observers(coap_context_t *context, coap_resource_t *r)
 {
     coap_method_handler_t h;
     coap_subscription_t *obs;
@@ -732,8 +705,7 @@ coap_notify_observers(coap_context_t *context, coap_resource_t *r)
     r->dirty = 0;
 }
 
-void
-coap_check_notify(coap_context_t *context)
+void coap_check_notify(coap_context_t *context)
 {
     coap_resource_t *r;
 
@@ -757,11 +729,10 @@ coap_check_notify(coap_context_t *context)
  * @param peer     The observer's address
  * @param token    The token that has been used for subscription.
  */
-static void
-coap_remove_failed_observers(coap_context_t *context,
-                             coap_resource_t *resource,
-                             const coap_address_t *peer,
-                             const str *token)
+static void coap_remove_failed_observers(coap_context_t *context,
+                                         coap_resource_t *resource,
+                                         const coap_address_t *peer,
+                                         const str *token)
 {
     coap_subscription_t *obs;
 
@@ -805,13 +776,11 @@ coap_remove_failed_observers(coap_context_t *context,
     }
 }
 
-void
-coap_handle_failed_notify(coap_context_t *context,
-                          const coap_address_t *peer,
-                          const str *token)
+void coap_handle_failed_notify(coap_context_t *context,
+                               const coap_address_t *peer,
+                               const str *token)
 {
     coap_resource_t *r;
-
 
 #ifdef COAP_RESOURCES_NOHASH
     LL_FOREACH(context->resources, r) {

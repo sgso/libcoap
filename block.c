@@ -1,23 +1,14 @@
-/* block.c -- block transfer
- *
- * Copyright (C) 2010--2012 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
 
-#if defined(HAVE_ASSERT_H) && !defined(assert)
-# include <assert.h>
-#endif
+#include <assert.h>
 
-#include "debug.h"
 #include "block.h"
+#include "debug.h"
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
 #ifndef WITHOUT_BLOCK
+
 unsigned int coap_opt_block_num(const coap_opt_t *block_opt)
 {
     unsigned int num = 0;
@@ -60,7 +51,7 @@ int coap_get_block(coap_pdu_t *pdu, unsigned short type, coap_block_t *block)
 }
 
 int coap_write_block_opt(coap_block_t *block, unsigned short type,
-                     coap_pdu_t *pdu, size_t data_length)
+                         coap_pdu_t *pdu, size_t data_length)
 {
     size_t start, want, avail;
     unsigned char buf[3];
@@ -96,7 +87,7 @@ int coap_write_block_opt(coap_block_t *block, unsigned short type,
             unsigned char szx;
 
             /* we need to decrease the block size */
-            if (avail < 16) { 	/* bad luck, this is the smallest block size */
+            if (avail < 16) {   /* bad luck, this is the smallest block size */
                 debug("not enough space, even the smallest block does not fit");
                 return -3;
             }
@@ -119,7 +110,7 @@ int coap_write_block_opt(coap_block_t *block, unsigned short type,
 }
 
 int coap_add_block(coap_pdu_t *pdu, unsigned int len, const unsigned char *data,
-               unsigned int block_num, unsigned char block_szx)
+                   unsigned int block_num, unsigned char block_szx)
 {
     size_t start;
     start = block_num << (block_szx + 4);
@@ -132,4 +123,5 @@ int coap_add_block(coap_pdu_t *pdu, unsigned int len, const unsigned char *data,
                          min(len - start, (unsigned int)(1 << (block_szx + 4))),
                          data + start);
 }
-#endif /* WITHOUT_BLOCK  */
+
+#endif /* WITHOUT_BLOCK */

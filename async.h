@@ -1,5 +1,4 @@
-/* async.h -- state management for asynchronous messages
- *
+/*
  * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
  *
  * This file is part of the CoAP library libcoap. Please see
@@ -11,11 +10,11 @@
  * @brief state management for asynchronous messages
  */
 
-
-#ifndef _COAP_ASYNC_H_
-#define _COAP_ASYNC_H_
+#ifndef COAP_ASYNC_H_
+#define COAP_ASYNC_H_
 
 #include "config.h"
+
 #include "net.h"
 
 #ifndef WITHOUT_ASYNC
@@ -30,7 +29,7 @@
  * been explicitly subscribed to with the option @c observe.
  */
 typedef struct coap_async_state_t {
-    unsigned char flags;	/**< holds the flags to control behaviour */
+    unsigned char flags;        /**< holds the flags to control behaviour */
 
     /**
      * Holds the internal time when the object was registered with a
@@ -44,14 +43,14 @@ typedef struct coap_async_state_t {
      * the asynchronous state object. */
     void *appdata;
 
-    unsigned short message_id; 	/**< id of last message seen */
-    coap_tid_t id;		/**< transaction id */
+    unsigned short message_id;  /**< id of last message seen */
+    coap_tid_t id;              /**< transaction id */
 
     struct coap_async_state_t *next; /**< internally used for linking */
 
-    coap_address_t peer;		/**< the peer to notify */
-    size_t tokenlen;		/**< length of the token */
-    unsigned char token[];	/**< the token to use in a response */
+    coap_address_t peer;                /**< the peer to notify */
+    size_t tokenlen;            /**< length of the token */
+    unsigned char token[];      /**< the token to use in a response */
 } coap_async_state_t;
 
 /* Definitions for Async Status Flags These flags can be used to
@@ -84,9 +83,10 @@ typedef struct coap_async_state_t {
  * @return A pointer to the registered coap_async_state_t object or
  * @c NULL in case of an error.
  */
-coap_async_state_t *
-coap_register_async(coap_context_t *context, coap_address_t *peer,
-                    coap_pdu_t *request, unsigned char flags, void *data);
+coap_async_state_t *coap_register_async(coap_context_t *context,
+                                        coap_address_t *peer,
+                                        coap_pdu_t *request,
+                                        unsigned char flags, void *data);
 
 /**
  * Removes the state object identified by @p id from @p context. The
@@ -115,8 +115,7 @@ int coap_remove_async(coap_context_t *context, coap_tid_t id,
  *
  * @param s The object to delete.
  */
-void
-coap_free_async(coap_async_state_t *state);
+void coap_free_async(coap_async_state_t *state);
 
 /**
  * Retrieves the object identified by @p id from the list of asynchronous
@@ -137,14 +136,13 @@ coap_async_state_t *coap_find_async(coap_context_t *context, coap_tid_t id);
  *
  * @param s The state object to update.
  */
-static inline void
-coap_touch_async(coap_async_state_t *s)
+static inline void coap_touch_async(coap_async_state_t *s)
 {
     coap_ticks(&s->created);
 }
 
 /** @} */
 
-#endif /*  WITHOUT_ASYNC */
+#endif /* WITHOUT_ASYNC */
 
-#endif /* _COAP_ASYNC_H_ */
+#endif /* COAP_ASYNC_H_ */

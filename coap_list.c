@@ -1,23 +1,14 @@
-/* coap_list.c -- CoAP list structures
- *
- * Copyright (C) 2010,2011 Olaf Bergmann <bergmann@tzi.org>
- *
- * This file is part of the CoAP library libcoap. Please see
- * README for terms of use.
- */
-
 #include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 
+#include "coap_list.h"
 #include "debug.h"
 #include "mem.h"
-#include "coap_list.h"
 
-int
-coap_insert(coap_list_t **queue, coap_list_t *node,
-            int (*order)(void *, void *node))
+int coap_insert(coap_list_t **queue, coap_list_t *node,
+                int (*order)(void *, void *node))
 {
     coap_list_t *p, *q;
 
@@ -53,8 +44,7 @@ coap_insert(coap_list_t **queue, coap_list_t *node,
     return 1;
 }
 
-int
-coap_delete(coap_list_t *node)
+int coap_delete(coap_list_t *node)
 {
     if (!node) {
         return 0;
@@ -70,8 +60,7 @@ coap_delete(coap_list_t *node)
     return 1;
 }
 
-void
-coap_delete_list(coap_list_t *queue)
+void coap_delete_list(coap_list_t *queue)
 {
     if (!queue) {
         return;
@@ -81,12 +70,11 @@ coap_delete_list(coap_list_t *queue)
     coap_delete(queue);
 }
 
-coap_list_t *
-coap_new_listnode(void *data, void (*delete_func)(void *))
+coap_list_t *coap_new_listnode(void *data, void (*delete_func)(void *))
 {
     coap_list_t *node = coap_malloc(sizeof(coap_list_t));
 
-    if (! node) {
+    if (!node) {
 #ifndef NDEBUG
         coap_log(LOG_CRIT, "coap_new_listnode: malloc\n");
 #endif
